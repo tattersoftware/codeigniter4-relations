@@ -1,0 +1,22 @@
+<?php namespace Tatter\Relations\Exceptions;
+
+use CodeIgniter\Exceptions\ExceptionInterface;
+use CodeIgniter\Exceptions\FrameworkException;
+
+class RelationsException extends \RuntimeException implements ExceptionInterface
+{
+	public static function forUnknownTable($tableName)
+	{
+		return new static(lang('Relations.unknownTable', [$tableName]));
+	}
+	
+	public static function forUnknownRelation($table1, $table2)
+	{
+		return new static(lang('Relations.unknownRelation', [$table1, $table2]));
+	}
+	
+	public static function forMissingPivots($table1, $table2)
+	{
+		return new static(lang('Relations.missingPivots', [$table1, $table2]));
+	}
+}

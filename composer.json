@@ -1,0 +1,54 @@
+{
+	"name": "tatter/relations",
+	"description": "Entity relationships for CodeIgniter 4",
+	"keywords": [
+		"codeigniter",
+		"codeigniter4",
+		"relations",
+		"relationships",
+		"database",
+		"mapping",
+		"entity"
+	],
+	"homepage": "https://github.com/tattersoftware/codeigniter4-relations",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Matthew Gatner",
+			"email": "mgatner@tattersoftware.com",
+			"homepage": "https://tattersoftware.com",
+			"role": "Developer"
+		}
+	],
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/codeigniter4/CodeIgniter4"
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {
+		"php" : "^7.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit" : "^7.0",
+		"mockery/mockery": "^1.0",
+		"codeigniter4/codeigniter4": "dev-develop"
+	},
+	"autoload": {
+		"psr-4": {
+			"Tatter\\Relations\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"CIModuleTests\\Support\\": "tests/_support"
+		}
+	},
+	"scripts": {
+		"test": "phpunit",
+		"post-update-cmd": [
+			"composer dump-autoload"
+		]
+	}
+}
