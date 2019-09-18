@@ -1,6 +1,6 @@
 <?php namespace CIModuleTests\Support\Models;
 
-use CodeIgniter\Model;
+use Tatter\Relations\Model;
 
 class ServicerModel extends Model
 {
@@ -17,4 +17,6 @@ class ServicerModel extends Model
 	protected $validationRules    = [];
 	protected $validationMessages = [];
 	protected $skipValidation     = false;
+	
+	protected $with = ['lawyers'];
 }

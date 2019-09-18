@@ -12,6 +12,12 @@
 
 class Relations extends \Tatter\Relations\Config\Relations
 {
-	// whether to continue instead of throwing exceptions
+	// Whether to continue instead of throwing exceptions
 	public $silent = true;
+	
+	// Whether related items can load their own relations
+	public $allowNesting = true;
+	
+	// Return type to fall back to if no model is available
+	public $defaultReturnType = 'object';
 }

@@ -1,8 +1,8 @@
 <?php namespace CIModuleTests\Support\Models;
 
-use Tatter\Relations\Model;
+use CodeIgniter\Model;
 
-class FactoryModel extends Model
+class NormalModel extends Model
 {
 	protected $table      = 'factories';
 	protected $primaryKey = 'id';

@@ -1,6 +1,6 @@
 <?php namespace CIModuleTests\Support\Models;
 
-use CodeIgniter\Model;
+use Tatter\Relations\Model;
 
 class WorkerModel extends Model
 {

@@ -2,15 +2,15 @@
 
 use Tatter\Relations\Model;
 
-class FactoryModel extends Model
+class LawyerModel extends Model
 {
-	protected $table      = 'factories';
+	protected $table      = 'lawyers';
 	protected $primaryKey = 'id';
 
-	protected $returnType = 'object';
+	protected $returnType = 'array';
 	protected $useSoftDeletes = true;
 
-	protected $allowedFields = ['name', 'uid', 'class', 'icon', 'summary'];
+	protected $allowedFields = ['servicer_id', 'name'];
 
 	protected $useTimestamps = true;
 

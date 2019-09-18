@@ -1,0 +1,54 @@
+<?php
+
+class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
+{
+	public function setUp(): void
+	{
+		parent::setUp();
+		
+		$this->factories = new \CIModuleTests\Support\Models\FactoryModel();
+		$this->lawyers   = new \CIModuleTests\Support\Models\LawyerModel();
+		$this->machines  = new \CIModuleTests\Support\Models\MachineModel();
+		$this->servicers = new \CIModuleTests\Support\Models\ServicerModel();
+		$this->workers   = new \CIModuleTests\Support\Models\WorkerModel();
+	}
+	
+	public function testReindex()
+	{
+		$factories = $this->factories->with(false)->findAll();
+		
+        $this->assertEquals([1, 3, 4], array_keys($factories));
+	}
+	
+	public function testWithExplicit()
+	{
+		$worker = $this->workers->with('factories')->find(1);
+		$factory = $this->factories->with(false)->find(1);
+		
+        $this->assertEquals($factory, reset($worker->factories));
+	}
+	
+	public function testWithImplicit()
+	{
+		$servicer = $this->servicers->find(1);
+		$lawyer   = $this->lawyers->with(false)->find(1);
+		
+        $this->assertEquals($lawyer, reset($servicer->lawyers));
+	}
+	
+	public function testBelongsToIsSingleton()
+	{
+		$machine = $this->machines->find(1);
+		$factory = $this->factories->with(false)->find(1);
+
+        $this->assertEquals($factory, $machine->factory);
+	}
+	
+	public function testNestedRelations()
+	{
+		$servicer = $this->servicers->with('machines')->find(1);
+		$factory  = $this->factories->with(false)->find(1);
+		
+        $this->assertEquals($factory, $servicer->machines[1]->factory);
+	}
+}

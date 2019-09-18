@@ -209,5 +209,20 @@ class TestSeeder extends \CodeIgniter\Database\Seeder
 		{
 			$builder->insert($row);
 		}
+		
+		// Lawyers
+		$lawyers = [
+			['servicer_id' => 1, 'name' => 'Harmon Miller'],
+			['servicer_id' => 2, 'name' => 'Smooth Bill'],
+			['servicer_id' => 2, 'name' => 'Slick Rick'],
+			['servicer_id' => 2, 'name' => 'Dirty Dan'],
+			['servicer_id' => 4, 'name' => 'Inita Jobe'],
+		];
+		
+		$builder = $this->db->table('lawyers');
+		foreach ($lawyers as $lawyer)
+		{
+			$builder->insert($lawyer);
+		}
 	}
 }

@@ -92,7 +92,7 @@ class Model extends \CodeIgniter\Model
 	}
 
 	//--------------------------------------------------------------------
-	// FINDERS
+	// FINDERS EXTENSIONS
 	//--------------------------------------------------------------------
 
 	/**
@@ -166,7 +166,14 @@ class Model extends \CodeIgniter\Model
 		if (empty($rows))
 		{
 			unset($this->tmpWith, $this->tmpWith);
-			return $this->simpleReindex($rows);
+			return $rows;
+		}
+
+		// Likewise for empty singletons
+		if (count($rows) == 1 && reset($rows) == null)
+		{
+			unset($this->tmpWith, $this->tmpWith);
+			return $rows;
 		}
 		
 		// If no tmpWith was set then use this model's default
@@ -215,11 +222,11 @@ class Model extends \CodeIgniter\Model
 				// Inject related items
 				foreach ($relations as $tableName => $related)
 				{
-					// Collapse singleton relationships to object itself
+					// Collapse singleton relationships to the object itself
 					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$key        = singular($tableName);
-						$object     = $related[$id] ?? null;
+						$object     = reset($related[$id]) ?? null;
 						$item[$key] = $object;
 					}
 					else
@@ -236,11 +243,11 @@ class Model extends \CodeIgniter\Model
 				// Inject related items
 				foreach ($relations as $tableName => $related)
 				{
-					// Collapse singleton relationships to object itself
+					// Collapse singleton relationships to the object itself
 					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$property        = singular($tableName);
-						$object          = $related[$id] ?? null;
+						$object          = reset($related[$id]) ?? null;
 						$item->$property = $object;
 					}
 					else
@@ -418,6 +425,11 @@ class Model extends \CodeIgniter\Model
 	 */
 	protected function simpleReindex($rows): array
 	{
+		if (empty($rows))
+		{
+			return [];
+		}
+		
 		// Reindex $rows by this model's primary key and inject related items
 		$return = [];
 		foreach ($rows as $item)
@@ -425,16 +437,17 @@ class Model extends \CodeIgniter\Model
 			// Handle array return types
 			if (is_array($item))
 			{
-				$id = $item[$this->primaryKey];
+				$id = $item[$this->primaryKey] ?? null;
 			}
 			// Handle object return types
 			else
 			{
-				$id = $item->{$this->primaryKey};
+				$id = $item->{$this->primaryKey} ?? null;
 			}
 			
-			// if this primary key already existed the query probably had a join, return it as is
-			if (isset($return[$id]))
+			// If no primary key or an entry already existed then return it as is
+			// Probably the former is custom select() and the latter is a join()
+			if (empty($id) || isset($return[$id]))
 			{
 				return $rows;
 			}

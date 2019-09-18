@@ -56,5 +56,21 @@ class DatabaseTestCase extends \CodeIgniter\Test\CIDatabaseTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
+		
+		$config                        = new \Tatter\Schemas\Config\Schemas();
+		$config->silent                = false;
+		$config->ignoreMigrationsTable = true;
+		
+		$this->config  = $config;
+		$this->schemas = new \Tatter\Schemas\Schemas($config);
+		$this->handler = new DatabaseHandler($config, 'tests');
+		$this->schema  = $this->schemas->import($this->handler)->get();
+	}
+	
+	public function tearDown(): void
+	{
+		parent::tearDown();
+		unset($this->schema);
+		unset($this->handler);
 	}
 }
