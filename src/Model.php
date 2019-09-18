@@ -17,31 +17,16 @@ class Model extends \CodeIgniter\Model
 	// Array of tables to block from loading relations
 	protected $without = [];
 	
-	// Call CI model constructor then load the schema and register afterFind
+	// Call the CI model constructor then check for and load the schema
 	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
 	{
         parent::__construct($db, $validation);
-		
-		// First model loads the schema & config
-		if (is_null(self::$schema))
+
+		// First instantiation loads the config & inflection helper
+		if (is_null(self::$config))
 		{
-			$schemas = Services::schemas();
-			if (empty($schemas))
-			{
-				throw \RuntimeException(lang('Relations.noSchemas'));
-			}
-			
-			// Check for a schema from cache
-			$schema = $schemas->import('cache')->get();
-			if (is_null($schema))
-			{
-				// Generate the schema and save it to the cache
-				$schemas->import('database', 'model')->export('cache');
-				$schema = $schemas->get();
-			}
-			
-			self::$schema = $schema;
 			self::$config = config('Relations');
+			helper('inflector');
 		}
 	}
 	
@@ -93,7 +78,7 @@ class Model extends \CodeIgniter\Model
 	{
 		if (! is_string($tables) && ! is_array($tables))
 		{
-			throw \RuntimeException(lang('Relations.invalidWithout'));
+			throw new \RuntimeException(lang('Relations.invalidWithout'));
 		}
 		
 		if (is_string($tables))
@@ -205,6 +190,9 @@ class Model extends \CodeIgniter\Model
 			return $this->simpleReindex($rows);
 		}
 		
+		// Make sure the schema is loaded
+		$this->ensureSchema();
+		
 		// Harvest the IDs that want relations
 		$ids = array_column($rows, $this->primaryKey);
 		
@@ -225,9 +213,19 @@ class Model extends \CodeIgniter\Model
 				$id = $item[$this->primaryKey];
 				
 				// Inject related items
-				foreach ($relations as $tableName => $items)
+				foreach ($relations as $tableName => $related)
 				{
-					$item[$tableName] = $items[$id] ?? [];
+					// Collapse singleton relationships to object itself
+					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					{
+						$key        = singular($tableName);
+						$object     = $related[$id] ?? null;
+						$item[$key] = $object;
+					}
+					else
+					{
+						$item[$tableName] = $related[$id] ?? [];
+					}
 				}
 			}
 			// Handle object return types
@@ -236,9 +234,19 @@ class Model extends \CodeIgniter\Model
 				$id = $item->{$this->primaryKey};
 				
 				// Inject related items
-				foreach ($relations as $tableName => $items)
+				foreach ($relations as $tableName => $related)
 				{
-					$item->$tableName = $items[$id] ?? [];
+					// Collapse singleton relationships to object itself
+					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					{
+						$property        = singular($tableName);
+						$object          = $related[$id] ?? null;
+						$item->$property = $object;
+					}
+					else
+					{
+						$item->$tableName = $related[$id] ?? [];
+					}
 				}
 			}
 			
@@ -261,7 +269,7 @@ class Model extends \CodeIgniter\Model
 	 */
 	public function findRelated($tableName, $ids): array
 	{
-		// Make sure the schema knows this table
+		// Make sure the schema knows the related table
 		if (! isset(self::$schema->tables->{$tableName}))
 		{			
 			throw RelationsException::forUnknownTable($tableName);
@@ -269,14 +277,14 @@ class Model extends \CodeIgniter\Model
 		// Fetch the related table for easy access
 		$table = self::$schema->tables->{$tableName};
 
-		// Make sure the model table is related to the requested table
-		if (! isset(self::$schema->tables->{$this->table}->relations->{$tableName}))
+		// Make sure the related table is actually related to this model's table
+		if (! isset(self::$schema->tables->{$this->table}->relations->{$table->name}))
 		{
-			throw RelationsException::forUnknownRelation($this->table, $tableName);
+			throw RelationsException::forUnknownRelation($this->table, $table->name);
 		}
 		// Fetch the relation for easy access
-		$relation = self::$schema->tables->{$this->table}->relations->{$tableName};
-		
+		$relation = self::$schema->tables->{$this->table}->relations->{$table->name};
+
 		// Verify pivots
 		if (empty($relation->pivots))
 		{
@@ -296,10 +304,11 @@ class Model extends \CodeIgniter\Model
 			if ($builder instanceof self)
 			{
 				// If nesting is allowed we need to disable this table
-				// WIP: still won't prevent 3-level recursion loops
 				if (self::$config->allowNesting)
 				{
-					$builder->without($this->table);
+					// Add this table to the "without" list
+					$this->without($this->table);
+					$builder->without($this->tmpWithout);
 				}
 				// Otherwise turn off relation loading on returned relations
 				else
@@ -311,29 +320,55 @@ class Model extends \CodeIgniter\Model
 		// No model - use a generic builder
 		else
 		{
-			$builder = $this->db->table($tableName);
+			$builder = $this->db->table($table->name);
 			$returnType = self::$config->defaultReturnType;
 		}
-		
-		// Define the returns
-		$builder->select("{$tableName}.*");
 
-		// We also need the model table's pivot ID in the return
-		$pivot = reset($relation->pivots); // [table1, localKey, foreignKey]
-		$builder->select("{$pivot[0]}.{$pivot[2]} AS originating_id");
+		// Define the returns
+		$builder->select("{$table->name}.*");
 		
-		// Limit to the requested IDs
-		$builder->whereIn("{$pivot[0]}.{$pivot[2]}", $ids);
-		
-		// Navigate the pivots to generate join statements
-		$currentTable = $this->table;
-		foreach ($relation->pivots as $pivot)
+		// Handle each relationship type differently
+		switch ($relation->type)
 		{
-			$builder->join($pivot[0], "{$currentTable}.{$pivot[1]} = {$pivot[0]}.{$pivot[2]}");
-			$currentTable = $pivot[0];
+			// hasMany is the easiest because it doesn't need joins
+			case 'hasMany':
+				// Grab the first (should be only) pivot: [$table->name, $table->primaryKey, $this->table, foreignKey]
+				$pivot = reset($relation->pivots);
+				$originating = "{$pivot[2]}.{$pivot[3]}";
+			break;
+			
+			// belongsTo joins this model's table directly
+			case 'belongsTo':
+				// belongsTo is the only relationship where the originating ID is not available in the pivot table
+				// so we get it from this model's table
+				$originating = "{$this->table}.{$this->primaryKey}";
+				
+				// Grab the first (should be only) pivot: [$this->table, foreignKey, $table->name, $table->primaryKey]
+				$pivot = reset($relation->pivots);
+				
+				// Join this model's table (for ID filtering)
+				$builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
+			break;
+			
+			// manyToMany and manyThrough navigate the pivots stopping at the join table
+			default:
+				// Determine originating from the first pivot
+				$pivot = array_shift($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
+				$originating = "{$pivot[2]}.{$pivot[3]}";
+
+				// Navigate the remaining pivots to generate join statements
+				foreach ($relation->pivots as $pivot)
+				{
+					$builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
+				}
 		}
 		
+		// Filter on the requested IDs
+		$builder->select("{$originating} AS originating_id");
+		$builder->whereIn("{$originating}", $ids);
+		
 		// If the model is available use it to get the result
+		// Also triggers model's afterFind
 		if (isset($table->model))
 		{
 			$results = $builder->find();
@@ -343,11 +378,11 @@ class Model extends \CodeIgniter\Model
 		{
 			$results = $builder->get()->getResult();
 		}
-		
+
 		// Clean up
 		unset($table, $relation, $builder);
-		
-		// Reindex the results by this model's primary key
+
+		// Reindex the results by the originating ID (this model's primary key)
 		$return = [];
 		if ($returnType == 'array')
 		{
@@ -375,6 +410,7 @@ class Model extends \CodeIgniter\Model
 	/**
 	 * Reindexes $rows from a finder by their primary KEY_AS_FILENAME
 	 * Mostly used for consistent return format when no relations are requested
+	 * If multiple rows have the same primary (e.g. a join) it returns the originals
 	 *
 	 * @param array  $rows  Array of rows from the finder
 	 *
@@ -397,9 +433,45 @@ class Model extends \CodeIgniter\Model
 				$id = $item->{$this->primaryKey};
 			}
 			
+			// if this primary key already existed the query probably had a join, return it as is
+			if (isset($return[$id]))
+			{
+				return $rows;
+			}
 			$return[$id] = $item;
 		}
 		
 		return $return;
+	}
+	
+	/**
+	 * Ensures there is a schema to work from. Only called when necessary to prevent
+	 * repeat calls or recursion loops.
+	 */
+	protected function ensureSchema()
+	{
+		if (self::$schema)
+		{
+			return;
+		}
+		
+		// Load the schema service & config
+		$schemas = Services::schemas();
+		$config  = config('Schemas');
+		if (empty($schemas))
+		{
+			throw new \RuntimeException(lang('Relations.noSchemas'));
+		}
+		
+		// Check for a schema from the cache
+		$schema = $schemas->import('cache')->get();
+		if (is_null($schema))
+		{
+			// Generate the schema from the default handlers and save it to the cache
+			$schemas->import(...$config->defaultHandlers)->export('cache');
+			$schema = $schemas->get();
+		}
+		
+		self::$schema = $schema;
 	}
 }
