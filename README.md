@@ -78,24 +78,23 @@ echo $widget->name . " belongs to " . $widget->user->name;
 be disabled by changing `$allowNesting` in the config. With nesting enabled, any related
 items will alos load their related items:
 ```
+/* Define your models */
 class UserModel extends \Tatter\Relations\Model
 {
-	protected $with = 'widgets';
-
+	protected $table = 'users';
+	protected $with  = 'widgets';
 ...
-
-public listUsers($groupIds)
-{
-	$groups = $groupModel->whereIn('id', $groupIds)->with('users')->findAll();
 	
-	foreach ($groups as $group)
+/* Then in your controller */
+$groups = $groupModel->whereIn('id', $groupIds)->with('users')->findAll();
+
+foreach ($groups as $group)
+{
+	echo "<h1>{$group->name}</h1>";
+	
+	foreach ($group->users as $user)
 	{
-		echo "<h1>{$group->name}</h1>";
-		
-		foreach ($group->users as $user)
-		{
-			echo "{$user->name} is a {$user->role} with " . count($user->widgets) . " widgets.";
-		}
+		echo "{$user->name} is a {$user->role} with " . count($user->widgets) . " widgets.";
 	}
 }
 ```
