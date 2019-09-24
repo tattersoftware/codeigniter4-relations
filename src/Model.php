@@ -481,7 +481,7 @@ class Model extends \CodeIgniter\Model
 		if (is_null($schema))
 		{
 			// Generate the schema from the default handlers and save it to the cache
-			$schemas->import(...$config->defaultHandlers)->export('cache');
+			$schemas->import($config->defaultHandlers)->export('cache');
 			$schema = $schemas->get();
 		}
 		
