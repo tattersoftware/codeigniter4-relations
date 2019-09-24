@@ -98,3 +98,17 @@ foreach ($groups as $group)
 	}
 }
 ```
+
+## Performance
+
+**WARNING** Be aware that **Relations** relies on a schema generated from the **Schemas**
+library. While this process is relatively quick, it will cause a noticeable delay if a page
+request initiates the load. The schema will attempt to cache to prevent this delay, but
+if your cache is not configured correctly you *will* experience noticeable performance
+degradation! The recommended approach is to have a cron job generate your schema regularly
+so it never expires and no user will trigger the un-cached load, e.g.:
+```
+php spark schemas database model file -export cache
+```
+
+See [Tatter\Schemas](http://github.com/tattersoftware/codeigniter4-schemas) for more details.
