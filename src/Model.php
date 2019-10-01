@@ -226,7 +226,7 @@ class Model extends \CodeIgniter\Model
 					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$key        = singular($tableName);
-						$object     = reset($related[$id]) ?? null;
+						$object     = empty($related[$id]) ? null : reset($related[$id]);
 						$item[$key] = $object;
 					}
 					else
@@ -247,7 +247,7 @@ class Model extends \CodeIgniter\Model
 					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$property        = singular($tableName);
-						$object          = reset($related[$id]) ?? null;
+						$object          = empty($related[$id]) ? null : reset($related[$id]);
 						$item->$property = $object;
 					}
 					else
