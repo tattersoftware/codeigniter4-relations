@@ -310,11 +310,11 @@ class Model extends \CodeIgniter\Model
 			// Check for another Relations model to prevent nesting loops
 			if ($builder instanceof self)
 			{
-				// If nesting is allowed we need to disable this table
+				// If nesting is allowed we need to disable the target table
 				if (self::$config->allowNesting)
 				{
-					// Add this table to the "without" list
-					$this->without($this->table);
+					// Add the table to the "without" list
+					$this->without($table->name);
 					$builder->without($this->tmpWithout);
 				}
 				// Otherwise turn off relation loading on returned relations

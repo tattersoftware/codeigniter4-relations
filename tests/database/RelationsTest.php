@@ -51,4 +51,13 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 		
         $this->assertEquals($factory, $servicer->machines[1]->factory);
 	}
+	
+	public function testNestedRelationsNotTooDeep()
+	{
+		$factories = $this->factories->with('machines')->findAll();
+		$factory   = $this->factories->with(false)->find(1);
+
+        $this->assertEquals($factory, $factories[1]->machines[1]->factory);
+        $this->assertObjectNotHasAttribute('machines', $factories[1]->machines[1]->factory);
+	}
 }
