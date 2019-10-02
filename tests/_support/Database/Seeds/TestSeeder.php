@@ -224,5 +224,19 @@ class TestSeeder extends \CodeIgniter\Database\Seeder
 		{
 			$builder->insert($lawyer);
 		}
+		
+		// Lawsuits
+		$lawsuits = [
+			['client' => 2, 'factory_id' => 1, 'lawyer_id' => 1],
+			['client' => 8, 'factory_id' => 2, 'lawyer_id' => 5],
+			['client' => 4, 'factory_id' => 3, 'lawyer_id' => 2],
+			['client' => 5, 'factory_id' => 3, 'lawyer_id' => 5, 'deleted_at' => date('Y-m-d H:i:s')],
+		];
+		
+		$builder = $this->db->table('lawsuits');
+		foreach ($lawsuits as $lawsuit)
+		{
+			$builder->insert($lawsuit);
+		}
 	}
 }
