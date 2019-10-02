@@ -165,14 +165,14 @@ class Model extends \CodeIgniter\Model
 		// If there were no matches then reset per-query data and quit
 		if (empty($rows))
 		{
-			unset($this->tmpWith, $this->tmpWith);
+			unset($this->tmpWith, $this->tmpWithout);
 			return $rows;
 		}
 
 		// Likewise for empty singletons
 		if (count($rows) == 1 && reset($rows) == null)
 		{
-			unset($this->tmpWith, $this->tmpWith);
+			unset($this->tmpWith, $this->tmpWithout);
 			return $rows;
 		}
 		
@@ -193,7 +193,7 @@ class Model extends \CodeIgniter\Model
 		// If tmpWith ends up empty then reset and quit
 		if (empty($this->tmpWith))
 		{
-			unset($this->tmpWith, $this->tmpWith);
+			unset($this->tmpWith, $this->tmpWithout);
 			return $this->simpleReindex($rows);
 		}
 		
@@ -261,7 +261,7 @@ class Model extends \CodeIgniter\Model
 		}
 		
 		// Clear old data and reset per-query properties
-		unset($rows, $this->tmpWith, $this->tmpWith);
+		unset($rows, $this->tmpWith, $this->tmpWithout);
 		
 		return $return;
 	}
@@ -313,9 +313,10 @@ class Model extends \CodeIgniter\Model
 				// If nesting is allowed we need to disable the target table
 				if (self::$config->allowNesting)
 				{
-					// Add the table to the "without" list
-					$this->without($table->name);
-					$builder->without($this->tmpWithout);
+					// Add the target table to the "without" list
+					$without = $this->tmpWithout ?? [];
+					$without[] = $table->name;
+					$builder->without($without);
 				}
 				// Otherwise turn off relation loading on returned relations
 				else
