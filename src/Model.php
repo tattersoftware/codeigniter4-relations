@@ -17,6 +17,9 @@ class Model extends \CodeIgniter\Model
 	// Array of tables to block from loading relations
 	protected $without = [];
 	
+	// Whether to reindex results by the primary key
+	protected $reindex = true;
+	
 	// Call the CI model constructor then check for and load the schema
 	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
 	{
@@ -90,7 +93,48 @@ class Model extends \CodeIgniter\Model
 		
 		return $this;
 	}
+	
+	/**
+	 * Reset per-query variables.
+	 *
+	 * @return $this
+	 */
+	public function resetTmp()
+	{
+		unset($this->tmpWith, $this->tmpWithout, $this->tmpReindex);
+		
+		return $this;
+	}
 
+	/**
+	 * Enable/disable result reindexing.
+	 *
+	 * @param bool    $bool
+	 *
+	 * @return $this
+	 */
+	public function reindex(bool $bool = true)
+	{
+		$this->reindex = $bool;
+		
+		return $this;
+	}
+
+	/**
+	 * Intercept join requests to disable reindexing.
+	 *
+	 * @return $this
+	 */	
+	public function join(...$params)
+	{
+		$this->tmpReindex = false;
+		
+		// Pass through to the builder
+		$this->builder()->join(...$params);
+		
+		return $this;
+	}
+	
 	//--------------------------------------------------------------------
 	// FINDERS EXTENSIONS
 	//--------------------------------------------------------------------
@@ -165,14 +209,14 @@ class Model extends \CodeIgniter\Model
 		// If there were no matches then reset per-query data and quit
 		if (empty($rows))
 		{
-			unset($this->tmpWith, $this->tmpWithout);
+			$this->tmpReset();
 			return $rows;
 		}
 
 		// Likewise for empty singletons
 		if (count($rows) == 1 && reset($rows) == null)
 		{
-			unset($this->tmpWith, $this->tmpWithout);
+			$this->tmpReset();
 			return $rows;
 		}
 		
@@ -186,6 +230,11 @@ class Model extends \CodeIgniter\Model
 		{
 			$this->tmpWithout = $this->without;
 		}
+		// If no tmpReindex was set then use this model's default
+		if (! isset($this->tmpReindex))
+		{
+			$this->tmpReindex = $this->reindex;
+		}
 		
 		// Remove any blocked tables from the request
 		$this->tmpWith = array_diff($this->tmpWith, $this->tmpWithout);
@@ -193,8 +242,9 @@ class Model extends \CodeIgniter\Model
 		// If tmpWith ends up empty then reset and quit
 		if (empty($this->tmpWith))
 		{
-			unset($this->tmpWith, $this->tmpWithout);
-			return $this->simpleReindex($rows);
+			$rows = $this->tmpReindex ? $this->simpleReindex($rows) : $rows;
+			$this->tmpReset();
+			return $rows;
 		}
 		
 		// Make sure the schema is loaded
@@ -210,7 +260,7 @@ class Model extends \CodeIgniter\Model
 			$relations[$tableName] = $this->findRelated($tableName, $ids);
 		}
 		
-		// Reindex $rows by this model's primary key and inject related items
+		// Inject related items
 		$return = [];
 		foreach ($rows as $item)
 		{
@@ -257,11 +307,19 @@ class Model extends \CodeIgniter\Model
 				}
 			}
 			
-			$return[$id] = $item;
+			if ($this->tmpReindex)
+			{
+				$return[$id] = $item;
+			}
+			else
+			{
+				$return[] = $item;
+			}
 		}
 		
 		// Clear old data and reset per-query properties
-		unset($rows, $this->tmpWith, $this->tmpWithout);
+		unset($rows);
+		$this->resetTmp();
 		
 		return $return;
 	}
@@ -310,6 +368,9 @@ class Model extends \CodeIgniter\Model
 			// Check for another Relations model to prevent nesting loops
 			if ($builder instanceof self)
 			{
+				// Don't reindex (we'll do our own below)
+				$builder->reindex(false);
+
 				// If nesting is allowed we need to disable the target table
 				if (self::$config->allowNesting)
 				{
@@ -389,7 +450,7 @@ class Model extends \CodeIgniter\Model
 
 		// Clean up
 		unset($table, $relation, $builder);
-
+		
 		// Reindex the results by the originating ID (this model's primary key)
 		$return = [];
 		if ($returnType == 'array')
@@ -416,7 +477,7 @@ class Model extends \CodeIgniter\Model
 	}
 	
 	/**
-	 * Reindexes $rows from a finder by their primary KEY_AS_FILENAME
+	 * Reindexes $rows from a finder by their primary key
 	 * Mostly used for consistent return format when no relations are requested
 	 * If multiple rows have the same primary (e.g. a join) it returns the originals
 	 *
@@ -424,7 +485,7 @@ class Model extends \CodeIgniter\Model
 	 *
 	 * @return array
 	 */
-	protected function simpleReindex($rows): array
+	public function simpleReindex($rows): array
 	{
 		if (empty($rows))
 		{

@@ -20,6 +20,13 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
         $this->assertEquals([1, 3, 4], array_keys($factories));
 	}
 	
+	public function testNotReindex()
+	{
+		$factories = $this->factories->with(false)->reindex(false)->findAll();
+		
+        $this->assertEquals([0, 1, 2], array_keys($factories));
+	}
+	
 	public function testWithExplicit()
 	{
 		$worker = $this->workers->with('factories')->find(1);
@@ -48,7 +55,7 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 	{
 		$servicer = $this->servicers->with('machines')->find(1);
 		$factory  = $this->factories->with(false)->find(1);
-		
+
         $this->assertEquals($factory, $servicer->machines[1]->factory);
 	}
 	
@@ -59,5 +66,17 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 
         $this->assertEquals($factory, $factories[1]->machines[1]->factory);
         $this->assertObjectNotHasAttribute('machines', $factories[1]->machines[1]->factory);
+	}
+	
+	public function testBelongsToNested()
+	{
+		$machines  = $this->machines->findAll();
+		$factories = $this->factories->with(false)->findAll();
+
+        $this->assertEquals($factories[1], $machines[1]->factory);
+
+        $this->assertEquals($factories[1], $machines[3]->factory);
+
+        $this->assertEquals($factories[3], $machines[6]->factory);
 	}
 }
