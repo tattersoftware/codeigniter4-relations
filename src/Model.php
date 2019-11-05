@@ -353,7 +353,7 @@ class Model extends \CodeIgniter\Model
 		// Verify pivots
 		if (empty($relation->pivots))
 		{
-			throw SchemasException::forMissingPivots($this->table, $tableName);			
+			throw RelationsException::forMissingPivots($this->table, $tableName);			
 		}
 		
 		// Check for a known model for the target table
