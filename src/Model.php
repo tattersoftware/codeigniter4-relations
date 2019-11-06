@@ -422,11 +422,11 @@ class Model extends \CodeIgniter\Model
 			// manyToMany and manyThrough navigate the pivots stopping at the join table
 			default:
 				// Determine originating from the first pivot
-				$pivot = array_shift($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
+				$pivot = reset($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
 				$originating = "{$pivot[2]}.{$pivot[3]}";
 
 				// Navigate the remaining pivots to generate join statements
-				foreach ($relation->pivots as $pivot)
+				while ($pivot = next($relation->pivots))
 				{
 					$builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
 				}
