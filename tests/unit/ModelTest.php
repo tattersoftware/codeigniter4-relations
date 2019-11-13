@@ -1,8 +1,5 @@
 <?php
 
-use Tatter\Schemas\Handlers\CacheHandler;
-use Tatter\Schemas\Handlers\DatabaseHandler;
-
 class ModelTest extends CIModuleTests\Support\UnitTestCase
 {
 	public function testWithString()
