@@ -1,12 +1,10 @@
 <?php namespace Tatter\Relations;
 
-use CodeIgniter\Config\Services;
 use Tatter\Relations\Exceptions\RelationsException;
 
 class Model extends \CodeIgniter\Model
 {
-	// Static instance of the schema
-	protected static $schema;
+	use \Tatter\Relations\Traits\SchemaLoader;
 	
 	// Static instance of Relations config
 	protected static $config;
@@ -20,7 +18,7 @@ class Model extends \CodeIgniter\Model
 	// Whether to reindex results by the primary key
 	protected $reindex = true;
 	
-	// Call the CI model constructor then check for and load the schema
+	// Call the framework Model constructor
 	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
 	{
         parent::__construct($db, $validation);
@@ -247,8 +245,8 @@ class Model extends \CodeIgniter\Model
 			return $rows;
 		}
 		
-		// Make sure the schema is loaded
-		$this->ensureSchema();
+		// Get the schema
+		$schema = $this->loadSchema();
 		
 		// Harvest the IDs that want relations
 		$ids = array_column($rows, $this->primaryKey);
@@ -273,7 +271,7 @@ class Model extends \CodeIgniter\Model
 				foreach ($relations as $tableName => $related)
 				{
 					// Collapse singleton relationships to the object itself
-					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					if ($schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$key        = singular($tableName);
 						$object     = empty($related[$id]) ? null : reset($related[$id]);
@@ -294,7 +292,7 @@ class Model extends \CodeIgniter\Model
 				foreach ($relations as $tableName => $related)
 				{
 					// Collapse singleton relationships to the object itself
-					if (self::$schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					if ($schema->tables->{$this->table}->relations->{$tableName}->singleton)
 					{
 						$property        = singular($tableName);
 						$object          = empty($related[$id]) ? null : reset($related[$id]);
@@ -325,7 +323,7 @@ class Model extends \CodeIgniter\Model
 	}
 
 	/**
-	 * Uses the Schema to load related items
+	 * Uses the schema to load related items
 	 *
 	 * @param string $tableName  Name of the table for related items
 	 * @param array  $ids        Array of primary keys
@@ -334,21 +332,24 @@ class Model extends \CodeIgniter\Model
 	 */
 	public function findRelated($tableName, $ids): array
 	{
+		// Get the schema
+		$schema = $this->loadSchema();
+
 		// Make sure the schema knows the related table
-		if (! isset(self::$schema->tables->{$tableName}))
+		if (! isset($schema->tables->{$tableName}))
 		{
 			throw RelationsException::forUnknownTable($tableName);
 		}
 		// Fetch the related table for easy access
-		$table = self::$schema->tables->{$tableName};
+		$table = $schema->tables->{$tableName};
 
 		// Make sure the related table is actually related to this model's table
-		if (! isset(self::$schema->tables->{$this->table}->relations->{$table->name}))
+		if (! isset($schema->tables->{$this->table}->relations->{$table->name}))
 		{
 			throw RelationsException::forUnknownRelation($this->table, $table->name);
 		}
 		// Fetch the relation for easy access
-		$relation = self::$schema->tables->{$this->table}->relations->{$table->name};
+		$relation = $schema->tables->{$this->table}->relations->{$table->name};
 
 		// Verify pivots
 		if (empty($relation->pivots))
@@ -517,41 +518,5 @@ class Model extends \CodeIgniter\Model
 		}
 		
 		return $return;
-	}
-	
-	/**
-	 * Ensures there is a schema to work from. Only called when necessary to prevent
-	 * repeat calls or recursion loops.
-	 */
-	protected function ensureSchema()
-	{
-		if (self::$schema)
-		{
-			return;
-		}
-		
-		// Load the Schemas service
-		$schemas = Services::schemas();
-		if (empty($schemas))
-		{
-			throw new \RuntimeException(lang('Relations.noSchemas'));
-		}
-		
-		// Check for a schema using the defaults
-		$schema = $schemas->get();
-
-		if (is_null($schema))
-		{
-			// Try reading an archived schema
-			$schema = $schemas->read()->get();
-
-			if (is_null($schema))
-			{
-				// Give up
-				throw new \RuntimeException(lang('Relations.noSchemas'));
-			}
-		}
-		
-		self::$schema = $schema;
 	}
 }
