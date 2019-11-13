@@ -336,7 +336,7 @@ class Model extends \CodeIgniter\Model
 	{
 		// Make sure the schema knows the related table
 		if (! isset(self::$schema->tables->{$tableName}))
-		{			
+		{
 			throw RelationsException::forUnknownTable($tableName);
 		}
 		// Fetch the related table for easy access
@@ -530,21 +530,26 @@ class Model extends \CodeIgniter\Model
 			return;
 		}
 		
-		// Load the schema service & config
+		// Load the Schemas service
 		$schemas = Services::schemas();
-		$config  = config('Schemas');
 		if (empty($schemas))
 		{
 			throw new \RuntimeException(lang('Relations.noSchemas'));
 		}
 		
-		// Check for a schema from the cache
-		$schema = $schemas->import('cache')->get();
+		// Check for a schema using the defaults
+		$schema = $schemas->get();
+
 		if (is_null($schema))
 		{
-			// Generate the schema from the default handlers and save it to the cache
-			$schemas->import($config->defaultHandlers)->export('cache');
-			$schema = $schemas->get();
+			// Try reading an archived schema
+			$schema = $schemas->read()->get();
+
+			if (is_null($schema))
+			{
+				// Give up
+				throw new \RuntimeException(lang('Relations.noSchemas'));
+			}
 		}
 		
 		self::$schema = $schema;
