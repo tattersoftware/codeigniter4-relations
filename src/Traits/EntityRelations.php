@@ -1,14 +1,60 @@
 <?php namespace Tatter\Relations\Traits;
 
+use Tatter\Relations\Exceptions\RelationsException;
+
 trait EntityRelations
 {
 	use SchemaLoader;
 
 	/**
+	 * Validate Relatable then call the framework Entity constructor.
+	 *
+	 * @param array|null $data
+	 */
+	public function __construct(array $data = null)
+	{
+		$this->ensureRelatable();
+
+        parent::__construct($data);
+	}
+
+	/**
+	 * Check "gets" unmatched from the framework entity for known relations
+	 *
+	 * @param string $key  The name of the requested property, i.e. table to check for relations
+	 *
+	 * @return mixed|null  Return is determined by relation type, see _getRelations()
+	 */
+	public __get(string $key)
+	{
+		// First check the framework's version
+		$result = parent::__get($key);
+		
+		if ($result !== null)
+		{
+			return $result;
+		}
+
+		// Get the schema
+		$schema = $this->loadSchema();
+
+		// Convert the key to table format
+		$tableName = plural(strtolower($key));
+		
+		// Check for a matching table
+		if ($schema->tables->$tableName)
+		{
+			return $this->_getRelations($tableName);
+		}
+		
+		return null;
+	}
+
+	/**
 	 * Intercept undefined methods and check them against known relations
 	 *
-	 * @param string $name      The name of the missing method
-	 * @param array $arguments  Any arguments passed; expects one: empty, singleton row, array of rows, single key, array of keys
+	 * @param string $name  The name of the missing method
+	 * @param array  $arguments  Any arguments passed. Expects only one: an array of keys or null
 	 *
 	 * @return mixed
 	 */
@@ -49,109 +95,104 @@ trait EntityRelations
 			throw new \ArgumentCountError(sprintf('Too many arguments to function %s::%s, %s passed and at most 1 expected', static::class, $name, count($arguments)));
 		}
 
+		// Make sure this entity's table is set
+		if (empty($this->table))
+		{
+			throw RelationsException::forMissingEntityTable(get_class());
+		}
+		
 		// Format target as a valid table reference
 		if (! function_exists('plural'))
 		{
 			helper('inflector');
 		}
-		$table = plural(strtolower($target));
+		$tableName = plural(strtolower($target));
 		
-		// Parse the arguments into an array of primary keys from $table
-		$args = empty($arguments) ? null : $this->_parseArgument($table, reset($arguments));
+		// Flatten the arguments to just the keys
+		$keys = reset($arguments);
+		if (empty($keys))
+		{
+			$keys = null;
+		}
+		// Wrap singletons in an array
+		elseif (! is_array($keys))
+		{
+			$keys = [$keys];
+		}
 
-		// At this point we have a match - pass to the appropriate function
+		// Pass to the appropriate function
 		$method = '_' . $verb;
-		$this->$method($table, $args);
+		$this->$method($tableName, $keys);
 	}
 
 	/**
-	 * Parse the argument into an array of keys (or null)
+	 * Get related items from a known related table
+	 * Note that __get() has already checked $this->attributes for $tableName
 	 *
-	 * @param array $argument  The argument passed via __call()
+	 * @param string $tableName  The name of the table to check for relations
+	 * @param string $keysOnly   Whether to return the entire rows or just primary keys
 	 *
-	 * @return array|null  Array of primary keys to the target table
+	 * @return mixed  Function return is determined by the relation type:
+	 *                              array of $returnTypes (hasMany, manyToMany)
+ 	 *                              single $returnType (belongsTo, hasOne)
 	 */
-	protected function _parseArgument($table, $argument): ?array
-	{		
-		// Check for an empty argument: false, [], null
-		if (empty($argument)
-		{
-			return null;
-		}
-		
-		// Check for a single key
-		if (is_string($argument) || is_int($argument))
-		{
-			return [$argument];
-		}
-		
-		// If it is an array we need to determine if it is a singleton row
-		if (is_array($argument))
-		{
-			$test = reset($argument);
-			
-			// If the first item is a potential key then check array indexes for sequential numeric versus field names
-			if (is_string($test) || is_int($test))
-			{
-				$test = key($argument);
-				
-				// If the index is 0 then this is a sequential array of keys - exactly what we already wanted
-				if ($test === 0)
-				{
-					return $argument;
-				}
-				
-				// At this point we know $argument is a singleton row - repackage into an array
-				$argument = [$argument];
-			}
-		}
+	public relations(string $tableName, $keysOnly = false)
+	{
+		$id = $this->attributes[$this->primaryKey];
 
-		// If it is a singleton object then repacakge it into an array
-		elseif (is_object($argument))
-		{
-			$argument = [$argument];
-		}
+		// Use the SchemaLoader trait to find related items
+		$items = $this->findRelated($tableName, [$id]);
+		
+		// Save them for future use
+		$this->attributes[$tableName] = $items[$id];
+		
+		// WIP - needs to collapse singletons!
 
-		// Not empty nor an int, string, array, or object (bool true maybe?) - give up
-		else
-		{
-			throw new \InvalidArgumentException('Entity relation functions cannot accept arguments of type ' . gettype($argument));
-		}
-		
-		// At this point we have an array of array rows or objects and need to determine their primary key
-		
-		
-
+		return $keysOnly ? $items[$id] : array_column($items[$id], $this->primaryKey);
 	}
 
 	/**
-	 * Check if this entity has specific relation(s) in the given table
+	 * Check if this entity has specific relation(s) in a table
 	 *
-	 * @param string $name      The name of the missing method
-	 * @param array $arguments  Any arguments passed
+	 * @param string $tableName  The name of the target table
+	 * @param array|null $keys  Primary keys to match, or null for "any"
 	 *
 	 * @return mixed
 	 */
-	protected function _has($table, $arguments)
+	protected function _hasRelations($tableName, $keys = null)
 	{
+		// Get the primary key from the schema
+		$schema  = $this->loadSchema();
+		$keyName = $schema->tables->$tableName->primaryKey;
 		
-		
-		// Check for existing attribute
-		if (isset($this->attributes[$table]))
+		// Check for existing relations (probably loaded by the model)
+		if (isset($this->attributes[$tableName]))
 		{
-			foreach ($this->attributes['options'] as $option)
+			// If no keys were requested then check for at least one entity
+			if (empty($keys))
 			{
-				if ($option->id == $optionId)
+				return ! empty($this->attributes[$tableName]);
+			}
+			
+			// Otherwise count how many of the requested keys are matched
+			$matched = 0;
+			foreach ($this->attributes[$tableName] as $entity)
+			{
+				$key = is_array($entity) ? $entity[$keyName] : $entity->$keyName;
+
+				if (in_array($key, $keys))
 				{
-					return true;
+					$matched++;
+					if ($matched >= count($keys))
+					{
+						return true;
+					}
 				}
 			}
 			
+			// Didn't match all of the passed keys
 			return false;
 		}
-
-		// Get the schema
-		$schema = $this->loadSchema();
 		
 		// Check the database
 		$builder = db_connect()->table('jobs_options');

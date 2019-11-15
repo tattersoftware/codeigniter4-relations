@@ -19,4 +19,14 @@ class RelationsException extends \RuntimeException implements ExceptionInterface
 	{
 		return new static(lang('Relations.missingPivots', [$table1, $table2]));
 	}
+	
+	public static function forMissingProperty($class, $property)
+	{
+		return new static(lang('Relations.missingProperty', [$class, $property]));
+	}
+	
+	public static function forNotRelatable($class)
+	{
+		return new static(lang('Relations.notRelatable', [$class]));
+	}
 }

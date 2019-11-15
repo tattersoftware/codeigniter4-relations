@@ -6,9 +6,6 @@ class Model extends \CodeIgniter\Model
 {
 	use \Tatter\Relations\Traits\SchemaLoader;
 	
-	// Static instance of Relations config
-	protected static $config;
-	
 	// Array of related tables to fetch from when using finders
 	protected $with = [];
 	
@@ -18,17 +15,12 @@ class Model extends \CodeIgniter\Model
 	// Whether to reindex results by the primary key
 	protected $reindex = true;
 	
-	// Call the framework Model constructor
+	// Validate Relatable then call the framework Model constructor
 	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
 	{
-        parent::__construct($db, $validation);
+		$this->ensureRelatable();
 
-		// First instantiation loads the config & inflection helper
-		if (is_null(self::$config))
-		{
-			self::$config = config('Relations');
-			helper('inflector');
-		}
+        parent::__construct($db, $validation);
 	}
 	
 	/**
@@ -322,161 +314,6 @@ class Model extends \CodeIgniter\Model
 		return $return;
 	}
 
-	/**
-	 * Uses the schema to load related items
-	 *
-	 * @param string $tableName  Name of the table for related items
-	 * @param array  $ids        Array of primary keys
-	 *
-	 * @return array
-	 */
-	public function findRelated($tableName, $ids): array
-	{
-		// Get the schema
-		$schema = $this->loadSchema();
-
-		// Make sure the schema knows the related table
-		if (! isset($schema->tables->{$tableName}))
-		{
-			throw RelationsException::forUnknownTable($tableName);
-		}
-		// Fetch the related table for easy access
-		$table = $schema->tables->{$tableName};
-
-		// Make sure the related table is actually related to this model's table
-		if (! isset($schema->tables->{$this->table}->relations->{$table->name}))
-		{
-			throw RelationsException::forUnknownRelation($this->table, $table->name);
-		}
-		// Fetch the relation for easy access
-		$relation = $schema->tables->{$this->table}->relations->{$table->name};
-
-		// Verify pivots
-		if (empty($relation->pivots))
-		{
-			throw RelationsException::forMissingPivots($this->table, $tableName);			
-		}
-		
-		// Check for a known model for the target table
-		if (isset($table->model))
-		{
-			// Grab an instance of the model to use as the builder
-			$class      = $table->model;
-			$builder    = new $class();
-			$returnType = $builder->returnType;
-			unset($class);
-			
-			// Check for another Relations model to prevent nesting loops
-			if ($builder instanceof self)
-			{
-				// Don't reindex (we'll do our own below)
-				$builder->reindex(false);
-
-				// If nesting is allowed we need to disable the target table
-				if (self::$config->allowNesting)
-				{
-					// Add the target table to the "without" list
-					$without = $this->tmpWithout ?? [];
-					$without[] = $table->name;
-					$builder->without($without);
-				}
-				// Otherwise turn off relation loading on returned relations
-				else
-				{
-					$builder->with(false);
-				}
-			}
-		}
-		// No model - use a generic builder
-		else
-		{
-			$builder = $this->db->table($table->name);
-			$returnType = self::$config->defaultReturnType;
-		}
-
-		// Define the returns
-		$builder->select("{$table->name}.*");
-		
-		// Handle each relationship type differently
-		switch ($relation->type)
-		{
-			// hasMany is the easiest because it doesn't need joins
-			case 'hasMany':
-				// Grab the first (should be only) pivot: [$table->name, $table->primaryKey, $this->table, foreignKey]
-				$pivot = reset($relation->pivots);
-				$originating = "{$pivot[2]}.{$pivot[3]}";
-			break;
-			
-			// belongsTo joins this model's table directly
-			case 'belongsTo':
-				// belongsTo is the only relationship where the originating ID is not available in the pivot table
-				// so we get it from this model's table
-				$originating = "{$this->table}.{$this->primaryKey}";
-				
-				// Grab the first (should be only) pivot: [$this->table, foreignKey, $table->name, $table->primaryKey]
-				$pivot = reset($relation->pivots);
-				
-				// Join this model's table (for ID filtering)
-				$builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
-			break;
-			
-			// manyToMany and manyThrough navigate the pivots stopping at the join table
-			default:
-				// Determine originating from the first pivot
-				$pivot = reset($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
-				$originating = "{$pivot[2]}.{$pivot[3]}";
-
-				// Navigate the remaining pivots to generate join statements
-				while ($pivot = next($relation->pivots))
-				{
-					$builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
-				}
-		}
-		
-		// Filter on the requested IDs
-		$builder->select("{$originating} AS originating_id");
-		$builder->whereIn("{$originating}", $ids);
-		
-		// If the model is available use it to get the result
-		// Also triggers model's afterFind
-		if (isset($table->model))
-		{
-			$results = $builder->find();
-		}
-		// No model - use a generic getResult
-		else
-		{
-			$results = $builder->get()->getResult();
-		}
-
-		// Clean up
-		unset($table, $relation, $builder);
-		
-		// Reindex the results by the originating ID (this model's primary key)
-		$return = [];
-		if ($returnType == 'array')
-		{
-			foreach ($results as $row)
-			{
-				$originatingId = $row['originating_id'];
-				unset($row['originating_id']);
-				$return[$originatingId][] = $row;
-			}
-		}
-		else
-		{
-			foreach ($results as $row)
-			{
-				$originatingId = $row->originating_id;
-				unset($row->originating_id);
-				$return[$originatingId][] = $row;
-			}
-		}
-		unset($results);
-
-		return $return;
-	}
-	
 	/**
 	 * Reindexes $rows from a finder by their primary key
 	 * Mostly used for consistent return format when no relations are requested
