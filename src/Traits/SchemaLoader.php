@@ -45,7 +45,7 @@ trait SchemaLoader
 	 * @param string $tableName  Name of the table for related items
 	 * @param array  $ids        Array of this class's primary keys
 	 *
-	 * @return array  [$id => $relatedItems]
+	 * @return array  [$id => [$relatedItems]], or [$id => $relatedItem] for singletons
 	 */
 	public function findRelated($tableName, $ids): array
 	{
@@ -89,7 +89,7 @@ trait SchemaLoader
 			$returnType = $builder->returnType;
 			unset($class);
 			
-			// If this was called from a model then check for another Relations model to prevent nesting loops
+			// If this was called from a model then check for another Relations model (to prevent nesting loops)
 			if ($builder instanceof self)
 			{
 				// Don't reindex (we'll do our own below)
@@ -172,31 +172,36 @@ trait SchemaLoader
 		{
 			$results = $builder->get()->getResult();
 		}
-
+		
 		// Clean up
-		unset($table, $relation, $builder);
+		unset($table, $builder);
 		
 		// Reindex the results by the originating ID (this table's primary key)
 		$return = [];
-		if ($returnType == 'array')
+
+		foreach ($results as $row)
 		{
-			foreach ($results as $row)
+			if ($returnType == 'array')
 			{
 				$originatingId = $row['originating_id'];
 				unset($row['originating_id']);
-				$return[$originatingId][] = $row;
 			}
-		}
-		else
-		{
-			foreach ($results as $row)
+			else
 			{
 				$originatingId = $row->originating_id;
 				unset($row->originating_id);
+			}
+				
+			// Singleton return one row set, others append to an array
+			if ($relation->singleton)
+			{
+				$return[$originatingId] = $row;
+			}
+			else
+			{
 				$return[$originatingId][] = $row;
 			}
 		}
-		unset($results);
 
 		return $return;
 	}

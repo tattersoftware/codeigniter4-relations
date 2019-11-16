@@ -237,58 +237,48 @@ class Model extends \CodeIgniter\Model
 			return $rows;
 		}
 		
-		// Get the schema
-		$schema = $this->loadSchema();
-		
 		// Harvest the IDs that want relations
 		$ids = array_column($rows, $this->primaryKey);
 		
+		// Get the schema
+		$schema = $this->loadSchema();
+		
 		// Find the relations for each table
-		$relations = [];
+		$relations = $singletons = [];
 		foreach ($this->tmpWith as $tableName)
 		{
-			$relations[$tableName] = $this->findRelated($tableName, $ids);
+			$relations[$tableName]  = $this->findRelated($tableName, $ids);
+			$singletons[$tableName] = $schema->tables->{$this->table}->relations->{$tableName}->singleton ? singular($tableName) : false;
 		}
-		
-		// Inject related items
+		unset($schema);
+
+		// Inject related items back into the rows
 		$return = [];
 		foreach ($rows as $item)
 		{
-			// Handle array return types
-			if (is_array($item))
+			$id = is_array($item) ? $item[$this->primaryKey] : $item->{$this->primaryKey};
+			
+			// Inject related items
+			foreach ($relations as $tableName => $related)
 			{
-				$id = $item[$this->primaryKey];
-				
-				// Inject related items
-				foreach ($relations as $tableName => $related)
+				// Assign singletons to a property named for the singular table
+				if ($name = $singletons[$tableName])
 				{
-					// Collapse singleton relationships to the object itself
-					if ($schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					if (is_array($item))
 					{
-						$key        = singular($tableName);
-						$object     = empty($related[$id]) ? null : reset($related[$id]);
-						$item[$key] = $object;
+						$item[$name] = $related[$id] ?? null;
 					}
 					else
 					{
-						$item[$tableName] = $related[$id] ?? [];
+						$item->$name = $related[$id] ?? null;
 					}
 				}
-			}
-			// Handle object return types
-			else
-			{
-				$id = $item->{$this->primaryKey};
-				
-				// Inject related items
-				foreach ($relations as $tableName => $related)
+				// Non-singletons use the plural table name
+				else
 				{
-					// Collapse singleton relationships to the object itself
-					if ($schema->tables->{$this->table}->relations->{$tableName}->singleton)
+					if (is_array($item))
 					{
-						$property        = singular($tableName);
-						$object          = empty($related[$id]) ? null : reset($related[$id]);
-						$item->$property = $object;
+						$item[$tableName] = $related[$id] ?? [];
 					}
 					else
 					{
