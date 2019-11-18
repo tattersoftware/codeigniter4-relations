@@ -1,30 +1,43 @@
-<?php namespace Tatter\Relations;
+<?php namespace Tatter\Relations\Traits;
 
-use Tatter\Relations\Exceptions\RelationsException;
+use Tatter\Relations\Interfaces\RelatableInterface;
+use Tatter\Schemas\Structures\Schema;
 
-class Model extends \CodeIgniter\Model
+trait ModelTrait
 {
-	use \Tatter\Relations\Traits\SchemaLoader;
-	
-	// Array of related tables to fetch from when using finders
-	protected $with = [];
-	
-	// Array of tables to block from loading relations
-	protected $without = [];
-	
-	// Whether to reindex results by the primary key
+	use \Tatter\Relations\Traits\BaseTrait;
+
+	/**
+	 * Whether to reindex results by the primary key
+	 *
+	 * @var bool
+	 */
 	protected $reindex = true;
 	
-	// Validate Relatable then call the framework Model constructor
+	
+	/**
+	 * Validate this class then call the framework Model constructor.
+	 *
+	 * @param ConnectionInterface|null $db
+	 * @param ValidationInterface|null $validation
+	 */
 	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
 	{
-		$this->ensureRelatable();
+		// Verify everything is correct
+		$this->_isRelatable();
+	
+		// Initialize any missing class properties
+		// Array of related tables to fetch from when using finders
+		$this->$with = empty($this->with) ? [] : $this->with;
+	
+		// Array of tables to block from loading relations
+		$this->$without = empty($this->without) ? [] : $this->without;
 
         parent::__construct($db, $validation);
 	}
 	
 	/**
-	 * Adds related tables to load along with the next finder.
+	 * Add related tables to load along with the next finder.
 	 *
 	 * @param mixed   $with       Table name, array of table names, or false (to disable)
 	 * @param bool    $overwrite  Whether to merge with existing table 'with' list
@@ -145,11 +158,11 @@ class Model extends \CodeIgniter\Model
 		// For singletons, wrap them as a one-item array and then unwrap on return
 		if (is_numeric($id) || is_string($id))
 		{
-			$data = $this->addRelated([$data]);
+			$data = $this->addRelations([$data]);
 			return reset($data);
 		}
 		
-		return $this->addRelated($data);
+		return $this->addRelations($data);
 	}
 
 	//--------------------------------------------------------------------
@@ -167,7 +180,7 @@ class Model extends \CodeIgniter\Model
 	{
 		$data = parent::findAll($limit, $offset);
 		
-		return $this->addRelated($data);		
+		return $this->addRelations($data);		
 	}
 
 	//--------------------------------------------------------------------
@@ -183,7 +196,7 @@ class Model extends \CodeIgniter\Model
 		$data = parent::first();
 		
 		// For singletons, wrap them as a one-item array and then unwrap on return
-		$data = $this->addRelated([$data]);
+		$data = $this->addRelations([$data]);
 		return reset($data);
 	}
 
@@ -194,7 +207,7 @@ class Model extends \CodeIgniter\Model
 	 *
 	 * @return array
 	 */
-	protected function addRelated($rows): ?array
+	protected function addRelations($rows): ?array
 	{
 		// If there were no matches then reset per-query data and quit
 		if (empty($rows))
@@ -241,13 +254,13 @@ class Model extends \CodeIgniter\Model
 		$ids = array_column($rows, $this->primaryKey);
 		
 		// Get the schema
-		$schema = $this->loadSchema();
+		$schema = $this->_schema();
 		
 		// Find the relations for each table
 		$relations = $singletons = [];
 		foreach ($this->tmpWith as $tableName)
 		{
-			$relations[$tableName]  = $this->findRelated($tableName, $ids);
+			$relations[$tableName]  = $this->findRelations($tableName, $ids);
 			$singletons[$tableName] = $schema->tables->{$this->table}->relations->{$tableName}->singleton ? singular($tableName) : false;
 		}
 		unset($schema);

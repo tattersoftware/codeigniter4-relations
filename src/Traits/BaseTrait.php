@@ -2,16 +2,17 @@
 
 use Config\Services;
 use Tatter\Relations\Interfaces\RelatableInterface;
+use Tatter\Schemas\Structures;
 use Tatter\Schemas\Structures\Schema;
 
-trait SchemaLoader
+trait BaseTrait
 {
 	/**
-	 * Ensures the Schemas service has a current schema to share across this library.
+	 * Preps the Schemas service with a current schema to share across this library and returns it.
 	 *
 	 * @return Schema
 	 */
-	protected function loadSchema(): Schema
+	protected function _schema(): Schema
 	{
 		// Load the Schemas service
 		$schemas = Services::schemas();
@@ -40,25 +41,52 @@ trait SchemaLoader
 	}
 
 	/**
-	 * Uses the schema to load related items
-	 *
-	 * @param string $tableName  Name of the table for related items
-	 * @param array  $ids        Array of this class's primary keys
-	 *
-	 * @return array  [$id => [$relatedItems]], or [$id => $relatedItem] for singletons
+	 * Ensure this class has everything it needs to use Relations
 	 */
-	public function findRelated($tableName, $ids): array
+	protected function _isRelatable()
+	{
+		// Check the interface
+		if (! self instanceof RelatableInterface)
+		{
+			throw RelationsException::forNotRelatable(get_class());
+		}
+
+		// Check the properties
+		if (empty($this->table))
+		{
+			throw RelationsException::forMissingProperty(get_class(), 'table');
+		}
+		if (empty($this->primaryKey))
+		{
+			throw RelationsException::forMissingProperty(get_class(), 'primaryKey');
+		}
+		
+		// Make sure we have the inflector helper
+		if (! function_exists('plural'))
+		{
+			helper('inflector');
+		}
+	}
+
+	/**
+	 * Uses the schema to determine this class's relationship to a table
+	 *
+	 * @param string  $tableName  Name of the target table
+	 *
+	 * @return Relation
+	 */
+	public function _getRelationship($tableName): Relation
 	{
 		// Get the schema
-		$schema = $this->loadSchema();
+		$schema = $this->_schema();
 
-		// Make sure the schema knows the related table
+		// Make sure the schema knows the target table
 		if (! isset($schema->tables->{$tableName}))
 		{
 			throw RelationsException::forUnknownTable($tableName);
 		}
 
-		// Fetch the related table
+		// Fetch the target table
 		$table = $schema->tables->{$tableName};
 
 		// Make sure the tables are actually related
@@ -67,15 +95,30 @@ trait SchemaLoader
 			throw RelationsException::forUnknownRelation($this->table, $table->name);
 		}
 
-		// Fetch the relation for easy access
+		// Get the relation
 		$relation = $schema->tables->{$this->table}->relations->{$table->name};
-		unset($schema);
 
-		// Verify pivots
+		// Verify that pivots are defined
 		if (empty($relation->pivots))
 		{
 			throw RelationsException::forMissingPivots($this->table, $tableName);
 		}
+		
+		return $relation;
+	}
+
+	/**
+	 * Uses the schema to load related items
+	 *
+	 * @param string      $tableName  Name of the table for related items
+	 * @param array|null  $ids        Filter for this class's primary keys
+	 *
+	 * @return array  [$id => [$relatedItems]], or [$id => $relatedItem] for singletons
+	 */
+	public function _getRelations($tableName, $ids = null): array
+	{
+		// Get the relationship
+		$relation = $this->_getRelationship($tableName);
 		
 		// Get the config
 		$config = config('Relations');
@@ -157,12 +200,21 @@ trait SchemaLoader
 				}
 		}
 		
-		// Filter on the requested IDs
 		$builder->select("{$originating} AS originating_id");
-		$builder->whereIn("{$originating}", $ids);
+
+		// Entities always filter by themselves
+		if (! empty($this->attributes[$this->primaryKey]))
+		{
+			$builder->where("{$originating}", $this->attributes[$this->primaryKey]);
+		}
+		// Check for an explicit filter request
+		elseif (! empty($ids))
+		{
+			$builder->whereIn("{$originating}", $ids);
+		}
 		
-		// If the model is available use it to get the result
-		// Also triggers model's afterFind
+		// If the model is available then use it to get the result
+		// (Bonus: triggers model's afterFind)
 		if (isset($table->model))
 		{
 			$results = $builder->find();
@@ -204,33 +256,5 @@ trait SchemaLoader
 		}
 
 		return $return;
-	}
-	
-	/**
-	 * Ensure this class has everything it needs to use Relations
-	 */
-	protected function ensureRelatable()
-	{
-		// Check the interface
-		if (! self instanceof RelatableInterface)
-		{
-			throw RelationsException::forNotRelatable(get_class());
-		}
-
-		// Check the properties
-		if (empty($this->table))
-		{
-			throw RelationsException::forMissingProperty(get_class(), 'table');
-		}
-		if (empty($this->primaryKey))
-		{
-			throw RelationsException::forMissingProperty(get_class(), 'primaryKey');
-		}
-		
-		// Make sure we have the inflector helper
-		if (! function_exists('plural'))
-		{
-			helper('inflector');
-		}
 	}
 }
