@@ -23,7 +23,7 @@ trait EntityTrait
 	 *
 	 * @return mixed|null  Return is determined by relation type, see relations()
 	 */
-	public __get(string $key)
+	public function __get(string $key)
 	{
 		// First check the framework's version
 		$result = parent::__get($key);
@@ -56,7 +56,7 @@ trait EntityTrait
 	 *
 	 * @return mixed
 	 */
-	public __call(string $name, array $arguments)
+	public function __call(string $name, array $arguments)
 	{
 		$verbs = ['has', 'set', 'add', 'remove'];
 
@@ -125,7 +125,7 @@ trait EntityTrait
 	 *                              array of items or keys (hasMany, manyToMany)
  	 *                              single item or key (belongsTo, hasOne)
 	 */
-	public relations(string $tableName, $keysOnly = false)
+	public function relations(string $tableName, $keysOnly = false)
 	{
 		// Use BaseTrait to get related items
 		$items = $this->_getRelated($tableName);

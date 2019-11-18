@@ -1,8 +1,9 @@
 <?php namespace Tatter\Relations\Traits;
 
 use Config\Services;
+use Tatter\Relations\Exceptions\RelationsException;
 use Tatter\Relations\Interfaces\RelatableInterface;
-use Tatter\Schemas\Structures;
+use Tatter\Schemas\Structures\Relation;
 use Tatter\Schemas\Structures\Schema;
 
 trait BaseTrait
@@ -46,7 +47,7 @@ trait BaseTrait
 	protected function _isRelatable()
 	{
 		// Check the interface
-		if (! self instanceof RelatableInterface)
+		if (! $this instanceof RelatableInterface)
 		{
 			throw RelationsException::forNotRelatable(get_class());
 		}
@@ -117,6 +118,9 @@ trait BaseTrait
 	 */
 	public function _getRelations($tableName, $ids = null): array
 	{
+		// Fetch the target table
+		$table = $this->_schema()->tables->{$tableName};
+
 		// Get the relationship
 		$relation = $this->_getRelationship($tableName);
 		

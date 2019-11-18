@@ -28,10 +28,10 @@ trait ModelTrait
 	
 		// Initialize any missing class properties
 		// Array of related tables to fetch from when using finders
-		$this->$with = empty($this->with) ? [] : $this->with;
+		$this->with = empty($this->with) ? [] : $this->with;
 	
 		// Array of tables to block from loading relations
-		$this->$without = empty($this->without) ? [] : $this->without;
+		$this->without = empty($this->without) ? [] : $this->without;
 
         parent::__construct($db, $validation);
 	}
@@ -260,8 +260,11 @@ trait ModelTrait
 		$relations = $singletons = [];
 		foreach ($this->tmpWith as $tableName)
 		{
-			$relations[$tableName]  = $this->findRelations($tableName, $ids);
-			$singletons[$tableName] = $schema->tables->{$this->table}->relations->{$tableName}->singleton ? singular($tableName) : false;
+			// Check for singletons
+			$relation = $this->_getRelationship($tableName);
+			$singletons[$tableName] = $relation->singleton ? singular($tableName) : false;
+
+			$relations[$tableName]  = $this->_getRelations($tableName, $ids);
 		}
 		unset($schema);
 
