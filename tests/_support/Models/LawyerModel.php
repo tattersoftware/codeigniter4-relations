@@ -1,9 +1,12 @@
 <?php namespace CIModuleTests\Support\Models;
 
-use Tatter\Relations\Model;
+use CodeIgniter\Model;
+use Tatter\Relations\Interfaces\RelatableInterface;
 
-class LawyerModel extends Model
+class LawyerModel extends Model implements RelatableInterface
 {
+	use \Tatter\Relations\Traits\ModelTrait;
+
 	protected $table      = 'lawyers';
 	protected $primaryKey = 'id';
 
