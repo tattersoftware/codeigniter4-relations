@@ -1,9 +1,8 @@
 <?php namespace CIModuleTests\Support\Models;
 
 use CodeIgniter\Model;
-use Tatter\Relations\Interfaces\RelatableInterface;
 
-class ServicerModel extends Model implements RelatableInterface
+class ServicerModel extends Model
 {
 	use \Tatter\Relations\Traits\ModelTrait;
 

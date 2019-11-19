@@ -1,9 +1,8 @@
 <?php namespace CIModuleTests\Support\Models;
 
 use CodeIgniter\Model;
-use Tatter\Relations\Interfaces\RelatableInterface;
 
-class FactoryModel extends Model implements RelatableInterface
+class FactoryModel extends Model
 {
 	use \Tatter\Relations\Traits\ModelTrait;
 

@@ -46,17 +46,11 @@ trait BaseTrait
 	 */
 	protected function _isRelatable()
 	{
-		// Check the interface
-		if (! $this instanceof RelatableInterface)
-		{
-			throw RelationsException::forNotRelatable(get_class());
-		}
-
-		// Check the properties
 		if (empty($this->table))
 		{
 			throw RelationsException::forMissingProperty(get_class(), 'table');
 		}
+
 		if (empty($this->primaryKey))
 		{
 			throw RelationsException::forMissingProperty(get_class(), 'primaryKey');

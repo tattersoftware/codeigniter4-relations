@@ -1,9 +1,8 @@
 <?php namespace CIModuleTests\Support\Models;
 
 use CodeIgniter\Model;
-use Tatter\Relations\Interfaces\RelatableInterface;
 
-class WorkerModel extends Model implements RelatableInterface
+class WorkerModel extends Model
 {
 	use \Tatter\Relations\Traits\ModelTrait;
 	 
