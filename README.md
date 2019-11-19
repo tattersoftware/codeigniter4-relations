@@ -4,8 +4,12 @@ Entity relationships for CodeIgniter 4
 ## Quick Start
 
 1. Install with Composer: `> composer require tatter/relations`
-2. Extend the model: `class UserModel extends \Tatter\Relations\Model`
+2. Add the trait to your model: `use \Tatter\Relations\Traits\ModelTrait`
 3. Load relations: `$users = $userModel->with('groups')->findAll();`
+4. Add the trait to your entity: `use \Tatter\Relations\Traits\EntityTrait`
+5. Load relations: `foreach ($user->groups as $group)`
+
+(See also Examples at the bottom)
 
 ## Installation
 
@@ -24,8 +28,7 @@ in the comments. If no config file is found in **app/Config** the library will u
 
 ### Schemas
 
-All the functionality of the library lies in the specialized model and the generated
-database schema. The schema is generated from
+All the functionality of the library relies on the generated database schema. The schema comes from
 [Tatter\Schemas](http://github.com/tattersoftware/codeigniter4-schemas) and can be adjusted
 based on your needs (see the **Schemas** config file). If you want to use the auto-generated
 schema your database will have follow conventional naming patterns for foreign keys and
@@ -34,10 +37,20 @@ for details.
 
 ## Usage
 
-In order to take advantage of relationship loading you need your model to extend
-`Tatter\Relations\Model`. This model extends the finders from CodeIgniter's core model and
-injects related items that you define into the returned rows. Related items can be requested
-by adding a `$with` property to your model:
+Relation loading is handled by traits that are added to their respective elements.
+
+### Eager/Model
+
+**ModelTrait** adds relation loading to your models by extending the default model `find*`
+methods and injecting relations into the returned results. Because this happens at the model
+level, related items can be loaded ahead of time in batches ("eager loading").
+
+Add the trait to your models:
+
+	use \Tatter\Relations\Traits\ModelTrait
+
+Related items can be requested by adding a `$with` property to your model:
+
 ```
 	protected $with = 'groups';
 	// or
@@ -45,6 +58,8 @@ by adding a `$with` property to your model:
 ```
 
 ... or by requesting it on-the-fly using the model `with()` method:
+
+
 ```
 $users = $userModel->with('groups')->findAll();
 foreach ($users as $userEntity)
@@ -53,8 +68,50 @@ foreach ($users as $userEntity)
 ...
 ```
 
-As you can see the related items are added directly to their corresponding object or array
-returned from the primary model.
+As you can see the related items are added directly to their corresponding object (or array)
+returned from the framework's model.
+
+### Lazy/Entity
+
+**EntityTrait** adds relation loading to individual items by extending adding magic `__get()`
+and `__call()` methods to check for matching database tables. Because this happens on each
+item, related items can be retrieved or updated on-the-fly ("lazy loading").
+
+Add the trait and its necessary properties to your entities:
+
+```
+	use \Tatter\Relations\Traits\EntityTrait
+	
+	protected $table      = 'users';
+	protected $primaryKey = 'id';
+```
+
+Related items are available as faux properties:
+
+```
+	$user = $userModel->find(1);
+	
+	foreach ($user->groups as $group)
+	{
+		echo $group->name;
+	}
+```
+
+... and can also be updated directly from the entity:
+
+```
+	$user->addGroup(3);
+	
+	if ($user->hasGroups([1, 3]))
+	{
+		echo 'allowed!';
+	}
+	
+	$user->setGroups([]);
+```
+
+Available magic method verbs are: `has`, `set`, `add`, and `remove`, and are only applicable
+for "manyToMany" relationships.
 
 ## Returned items
 
@@ -74,13 +131,15 @@ echo $widget->name . " belongs to " . $widget->user->name;
 
 ### Nesting
 
-**Relations** supports nested relation calls, but these can be resource intensive so may
+**ModelTrait** supports nested relation calls, but these can be resource intensive so may
 be disabled by changing `$allowNesting` in the config. With nesting enabled, any related
-items will alos load their related items:
+items will also load their related items (but not infinitely):
 ```
 /* Define your models */
-class UserModel extends \Tatter\Relations\Model
+class UserModel
 {
+	use \Tatter\Relations\Traits\ModelTrait;
+
 	protected $table = 'users';
 	protected $with  = 'widgets';
 ...
@@ -101,14 +160,35 @@ foreach ($groups as $group)
 
 ## Performance
 
-**WARNING** Be aware that **Relations** relies on a schema generated from the **Schemas**
+*WARNING*: Be aware that **Relations** relies on a schema generated from the **Schemas**
 library. While this process is relatively quick, it will cause a noticeable delay if a page
 request initiates the load. The schema will attempt to cache to prevent this delay, but
-if your cache is not configured correctly you *will* experience noticeable performance
-degradation! The recommended approach is to have a cron job generate your schema regularly
+if your cache is not configured correctly you will likely experience noticeable performance
+degradation. The recommended approach is to have a cron job generate your schema regularly
 so it never expires and no user will trigger the un-cached load, e.g.:
 ```
-php spark schemas database model file -export cache
+php spark schemas
 ```
 
 See [Tatter\Schemas](http://github.com/tattersoftware/codeigniter4-schemas) for more details.
+
+### Eager or Lazy Loading
+
+You are responsible for your application's performance! These tools are here to help, but
+they still allow dumb things.
+
+Eager loading (via **ModelTrait**) can create a huge performance
+increase by consolidating what would normally be multiple database calls into one. However,
+the related items will take up additional memory and can cause other bottlenecks or script
+failures if used indiscriminately.
+
+Lazy loading (via **EntityTrait**) makes it very easy to work with related items only when
+they are needed, and the magic functions keep your code clear and concise. However, each entity
+issues its own database call and can really start to slow down performance if used over
+over.
+
+A good rule of thumb is to use **ModelTrait** to preload relations that will be handled
+repeatedly (e.g. in loops) or that represent a very small or static dataset (e.g. a set of
+preference strings from 10 available). Use **EntityTrait** to handle individual items, such
+as viewing a single user page, or when it is unlikely you will use relations for most of the
+items.
