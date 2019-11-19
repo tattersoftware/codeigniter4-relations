@@ -1,6 +1,6 @@
 <?php
 
-class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
+class MethodsTest extends CIModuleTests\Support\DatabaseTestCase
 {
 	public function setUp(): void
 	{

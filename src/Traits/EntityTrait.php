@@ -90,12 +90,12 @@ trait EntityTrait
 		// Validate argument count
 		if (count($arguments) > 1)
 		{
-			throw new \ArgumentCountError(sprintf('Too many arguments to function %s::%s, %s passed and at most 1 expected', static::class, $name, count($arguments)));
+			throw new \ArgumentCountError(sprintf('Too many arguments to function %s::%s, %s passed and at most 1 expected.', static::class, $name, count($arguments)));
 		}
 
-		// Format target as a valid table reference (singular or plural)
+		// Format target as a valid table reference
 		// WIP - needs to handle underscores, maybe others?
-		$target = lcfirst($target);
+		$target = lcfirst(plural($target));
 		
 		// Flatten the arguments to just the keys
 		$keys = reset($arguments);
@@ -103,15 +103,22 @@ trait EntityTrait
 		{
 			$keys = null;
 		}
+
 		// Wrap singletons in an array
 		elseif (! is_array($keys))
 		{
 			$keys = [$keys];
 		}
+		
+		// Make sure there are no duplicates
+		else
+		{
+			$keys = array_unique($keys);
+		}
 
 		// Pass to the appropriate function
 		$method = '_' . $verb;
-		$this->$method($target, $keys);
+		return $this->$method($target, $keys);
 	}
 
 	/**
@@ -128,7 +135,7 @@ trait EntityTrait
 	public function relations(string $tableName, $keysOnly = false)
 	{
 		// Use BaseTrait to get related items
-		$items = $this->_getRelated($tableName);
+		$items = $this->_getRelations($tableName);
 
 		// Collapse to just this entity's relations
 		$items = reset($items);
@@ -138,17 +145,16 @@ trait EntityTrait
 		{
 			// Collapse to the row itself
 			$name = singular($tableName);
-			$item = reset($items);
 
 			// Save it for future use
-			$this->attributes[$name] = $item;
+			$this->attributes[$name] = $items;
 			
 			if ($keysOnly)
 			{
-				return is_array($item) ? $item[$this->primarykey] : $item->{$this->primarykey};
+				return is_array($items) ? $items[$this->primaryKey] : $items->{$this->primaryKey};
 			}
 			
-			return $item;
+			return $items;
 		}
 
 		// Save them for future use
@@ -166,7 +172,7 @@ trait EntityTrait
 	 *
 	 * @return mixed
 	 */
-	protected function _has($tableName, $keys = null)
+	protected function _has(string $tableName, array $keys = null)
 	{
 		// Get related items
 		$items = $this->attributes[$tableName] ?? $this->relations($tableName);
@@ -187,7 +193,7 @@ trait EntityTrait
 		$matched = 0;
 		foreach ($this->attributes[$tableName] as $entity)
 		{
-			$key = is_array($entity) ? $entity[$keyName] : $entity->$keyName;
+			$key = is_array($entity) ? $entity[$this->primaryKey] : $entity->{$this->primaryKey};
 
 			if (in_array($key, $keys))
 			{
@@ -213,7 +219,7 @@ trait EntityTrait
 	 *
 	 * @return bool  Success or failure
 	 */
-	protected function _set($tableName, $keys): bool
+	protected function _set(string $tableName, array $keys = null): bool
 	{
 		// Determine the type of relationship
 		$relation = $this->_getRelationship($tableName);
@@ -233,8 +239,9 @@ trait EntityTrait
 				$pivotId    = $relation->pivots[0][3];
 				$targetId   = $relation->pivots[1][1];
 
-				// Clear existing relations
 				$builder = db_connect()->table($pivotTable);
+
+				// Clear existing relations
 				$result = $builder->where($pivotId, $this->attributes[$this->primaryKey])->delete();
 
 				// Remove from the entity so if they are requested they will reload
@@ -266,7 +273,7 @@ trait EntityTrait
 	 *
 	 * @return bool  Success or failure
 	 */
-	protected function _add($tableName, $keys): bool
+	protected function _add(string $tableName, array $keys): bool
 	{
 		// If no keys were supplied then finish
 		if (empty($keys))
@@ -292,6 +299,8 @@ trait EntityTrait
 				$pivotId    = $relation->pivots[0][3];
 				$targetId   = $relation->pivots[1][1];
 
+				$builder = db_connect()->table($pivotTable);
+
 				// Remove from the entity so if they are requested they must reload
 				unset($this->attributes[$tableName]);
 
@@ -306,7 +315,8 @@ trait EntityTrait
 				}
 
 				$builder->insertBatch($rows);
-
+				
+				return true;
 			break;
 			
 			default:
@@ -325,7 +335,7 @@ trait EntityTrait
 	 *
 	 * @return bool  Success or failure
 	 */
-	protected function _remove($tableName, $keys): bool
+	protected function _remove(string $tableName, array $keys): bool
 	{
 		// If no keys were supplied then quit
 		if (empty($keys))
@@ -351,7 +361,7 @@ trait EntityTrait
 				$pivotId    = $relation->pivots[0][3];
 				$targetId   = $relation->pivots[1][1];
 
-				// Clear existing relations
+				// Remove the relations
 				$builder = db_connect()->table($pivotTable);
 				$result = $builder
 					->where($pivotId,    $this->attributes[$this->primaryKey])
@@ -360,6 +370,8 @@ trait EntityTrait
 
 				// Remove from the entity so if requested they will reload
 				unset($this->attributes[$tableName]);
+				
+				return true;
 			break;
 			
 			default:
