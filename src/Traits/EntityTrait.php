@@ -49,6 +49,36 @@ trait EntityTrait
 	}
 
 	/**
+	 * Complimentary property checker to __get()
+	 *
+	 * @param string $key  The name of the requested property, i.e. table to check for relations
+	 *
+	 * @return bool  Whether the entity property or table relation exists
+	 */
+	public function __isset(string $key): bool
+	{
+		// First check the framework's version
+		if (parent::__isset($key))
+		{
+			return true;
+		}
+
+		// Get the schema
+		$schema = $this->_schema();
+
+		// Convert the key to table format
+		$tableName = plural(strtolower($key));
+		
+		// Check for a matching table
+		if (isset($schema->tables->$tableName))
+		{
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
 	 * Intercept undefined methods and check them against known relations
 	 *
 	 * @param string $name  The name of the missing method
