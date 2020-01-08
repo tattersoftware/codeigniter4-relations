@@ -161,6 +161,7 @@ trait EntityTrait
 	 * @return mixed  Function return is determined by the relation type and keysOnly:
 	 *                              array of items or keys (hasMany, manyToMany)
  	 *                              single item or key (belongsTo, hasOne)
+ 	 *                              null if no matches
 	 */
 	public function relations(string $tableName, $keysOnly = false)
 	{
@@ -169,6 +170,12 @@ trait EntityTrait
 
 		// Collapse to just this entity's relations
 		$items = reset($items);
+
+		// Intercept empty results and force them to null
+		if (empty($items))
+		{
+			return null;
+		}
 
 		// Check the relationship to intercept singletons
 		if ($this->_getRelationship($tableName)->singleton)
