@@ -212,14 +212,14 @@ trait ModelTrait
 		// If there were no matches then reset per-query data and quit
 		if (empty($rows))
 		{
-			$this->tmpReset();
+			$this->resetTmp();
 			return $rows;
 		}
 
 		// Likewise for empty singletons
 		if (count($rows) == 1 && reset($rows) == null)
 		{
-			$this->tmpReset();
+			$this->resetTmp();
 			return $rows;
 		}
 		
@@ -246,7 +246,7 @@ trait ModelTrait
 		if (empty($this->tmpWith))
 		{
 			$rows = $this->tmpReindex ? $this->simpleReindex($rows) : $rows;
-			$this->tmpReset();
+			$this->resetTmp();
 			return $rows;
 		}
 		
