@@ -1,5 +1,9 @@
 # Tatter\Relations
+
 Entity relationships for CodeIgniter 4
+
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPUnit)
+
 
 ## Quick Start
 
@@ -23,7 +27,7 @@ Or, install manually by downloading the source files and adding the directory to
 ## Configuration (optional)
 
 The library's default behavior can be altered by extending its config file. Copy
-**bin/Relations.php** to **app/Config/** and follow the instructions
+**examples/Relations.php** to **app/Config/** and follow the instructions
 in the comments. If no config file is found in **app/Config** the library will use its own.
 
 ### Schemas
