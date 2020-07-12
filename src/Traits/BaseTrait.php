@@ -9,61 +9,6 @@ use Tatter\Schemas\Structures\Schema;
 trait BaseTrait
 {
 	/**
-	 * Preps the Schemas service with a current schema to share across this library and returns it.
-	 *
-	 * @return Schema
-	 */
-	protected function _schema(): Schema
-	{
-		// Load the Schemas service
-		$schemas = Services::schemas();
-
-		if (empty($schemas))
-		{
-			throw new \RuntimeException(lang('Relations.noSchemas'));
-		}
-		
-		// Check for a schema using the defaults
-		$schema = $schemas->get();
-
-		if (is_null($schema))
-		{
-			// Try reading an archived schema
-			$schema = $schemas->read()->get();
-
-			if (is_null($schema))
-			{
-				// Give up
-				throw new \RuntimeException(lang('Relations.noSchemas'));
-			}
-		}
-		
-		return $schema;
-	}
-
-	/**
-	 * Ensure this class has everything it needs to use Relations
-	 */
-	protected function _isRelatable()
-	{
-		if (empty($this->table))
-		{
-			throw RelationsException::forMissingProperty(get_class(), 'table');
-		}
-
-		if (empty($this->primaryKey))
-		{
-			throw RelationsException::forMissingProperty(get_class(), 'primaryKey');
-		}
-		
-		// Make sure we have the inflector helper
-		if (! function_exists('plural'))
-		{
-			helper('inflector');
-		}
-	}
-
-	/**
 	 * Uses the schema to determine this class's relationship to a table
 	 *
 	 * @param string  $tableName  Name of the target table
@@ -72,6 +17,8 @@ trait BaseTrait
 	 */
 	public function _getRelationship($tableName): Relation
 	{
+		$this->_verifyRelatable();
+
 		// Get the schema
 		$schema = $this->_schema();
 
@@ -112,6 +59,8 @@ trait BaseTrait
 	 */
 	public function _getRelations($tableName, $ids = null): array
 	{
+		$this->_verifyRelatable();
+
 		// Fetch the target table
 		$table = $this->_schema()->tables->{$tableName};
 
@@ -254,5 +203,62 @@ trait BaseTrait
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Preps the Schemas service with a current schema to share across this library and returns it.
+	 *
+	 * @return Schema
+	 */
+	protected function _schema(): Schema
+	{
+		$this->_verifyRelatable();
+
+		// Load the Schemas service
+		$schemas = Services::schemas();
+
+		if (empty($schemas))
+		{
+			throw new \RuntimeException(lang('Relations.noSchemas'));
+		}
+		
+		// Check for a schema using the defaults
+		$schema = $schemas->get();
+
+		if (is_null($schema))
+		{
+			// Try reading an archived schema
+			$schema = $schemas->read()->get();
+
+			if (is_null($schema))
+			{
+				// Give up
+				throw new \RuntimeException(lang('Relations.noSchemas'));
+			}
+		}
+		
+		return $schema;
+	}
+
+	/**
+	 * Ensure this class has everything it needs to use Relations
+	 */
+	protected function _verifyRelatable()
+	{
+		if (empty($this->table))
+		{
+			throw RelationsException::forMissingProperty(get_class(), 'table');
+		}
+
+		if (empty($this->primaryKey))
+		{
+			throw RelationsException::forMissingProperty(get_class(), 'primaryKey');
+		}
+		
+		// Make sure we have the inflector helper
+		if (! function_exists('plural'))
+		{
+			helper('inflector');
+		}
 	}
 }

@@ -5,18 +5,6 @@ trait EntityTrait
 	use BaseTrait;
 
 	/**
-	 * Validate this class then call the framework Entity constructor.
-	 *
-	 * @param array|null $data
-	 */
-	public function __construct(array $data = null)
-	{
-		$this->_isRelatable();
-
-        parent::__construct($data);
-	}
-
-	/**
 	 * Check for known relations when the framework entity fails to match a requested property
 	 *
 	 * @param string $key  The name of the requested property, i.e. table to check for relations
