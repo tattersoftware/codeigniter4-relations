@@ -1,10 +1,14 @@
 <?php
 
-class ModelTest extends CIModuleTests\Support\UnitTestCase
+use Tests\Support\Models\FactoryModel;
+use Tests\Support\Models\MachineModel;
+use Tests\Support\UnitTestCase;
+
+class ModelTest extends UnitTestCase
 {
 	public function testWithString()
 	{
-		$model = new \CIModuleTests\Support\Models\FactoryModel();
+		$model = new FactoryModel();
 		$model->with('machines');
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -14,7 +18,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithArray()
 	{
-		$model = new \CIModuleTests\Support\Models\FactoryModel();
+		$model = new FactoryModel();
 		$model->with(['machines', 'workers']);
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -24,7 +28,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithMerges()
 	{
-		$model = new \CIModuleTests\Support\Models\MachineModel();
+		$model = new MachineModel();
 		$model->with('servicers');
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -34,7 +38,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithOverwrites()
 	{
-		$model = new \CIModuleTests\Support\Models\MachineModel();
+		$model = new MachineModel();
 		$model->with('servicers', true);
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -44,7 +48,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithRepeats()
 	{
-		$model = new \CIModuleTests\Support\Models\FactoryModel();
+		$model = new FactoryModel();
 		$model->with('machines')->with('workers');
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -54,7 +58,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithFalse()
 	{
-		$model = new \CIModuleTests\Support\Models\MachineModel();
+		$model = new MachineModel();
 		$model->with(false);
 		
 		$result = $this->getPrivateProperty($model, 'tmpWith');
@@ -64,7 +68,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithoutString()
 	{
-		$model = new \CIModuleTests\Support\Models\FactoryModel();
+		$model = new FactoryModel();
 		$model->without('machines');
 		
 		$result = $this->getPrivateProperty($model, 'tmpWithout');
@@ -74,7 +78,7 @@ class ModelTest extends CIModuleTests\Support\UnitTestCase
 	
 	public function testWithoutArray()
 	{
-		$model = new \CIModuleTests\Support\Models\FactoryModel();
+		$model = new FactoryModel();
 		$model->without(['machines', 'workers']);
 		
 		$result = $this->getPrivateProperty($model, 'tmpWithout');

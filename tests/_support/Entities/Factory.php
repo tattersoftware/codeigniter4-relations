@@ -1,4 +1,4 @@
-<?php namespace CIModuleTests\Support\Entities;
+<?php namespace Tests\Support\Entities;
 
 use CodeIgniter\Entity;
 

@@ -1,4 +1,4 @@
-<?php namespace CIModuleTests\Support\Models;
+<?php namespace Tests\Support\Models;
 
 use CodeIgniter\Model;
 

@@ -1,9 +1,10 @@
-<?php namespace CIModuleTests\Support;
+<?php namespace Tests\Support;
 
 use CodeIgniter\Config\Services;
+use CodeIgniter\Test\CIDatabaseTestCase;
 use Tatter\Schemas\Drafter\Handlers\DatabaseHandler;
 
-class DatabaseTestCase extends \CodeIgniter\Test\CIDatabaseTestCase
+class DatabaseTestCase extends CIDatabaseTestCase
 {
 	/**
 	 * Should the database be refreshed before each test?
@@ -17,21 +18,21 @@ class DatabaseTestCase extends \CodeIgniter\Test\CIDatabaseTestCase
 	 *
 	 * @var string
 	 */
-	protected $seed = 'CIModuleTests\Support\Database\Seeds\TestSeeder';
+	protected $seed = 'Tests\Support\Database\Seeds\TestSeeder';
 
 	/**
 	 * The path to where we can find the test Seeds directory.
 	 *
 	 * @var string
 	 */
-	protected $basePath = MODULESUPPORTPATH . 'Database/';
+	protected $basePath = SUPPORTPATH . 'Database/';
 
 	/**
 	 * The namespace to help us find the migration classes.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'CIModuleTests\Support';
+	protected $namespace = 'Tests\Support';
 
 	public function setUp(): void
 	{

@@ -1,15 +1,18 @@
-<?php
+<?php namespace Tests\Support\Models;
 
-use CIModuleTests\Support\Entities\Factory;
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\Entities\Factory;
+use Tests\Support\Entities\Machine;
+use Tests\Support\Entities\Servicer;
 use Tatter\Relations\Exceptions\RelationsException;
 
-class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
+class RelationsTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->factories = new \CIModuleTests\Support\Models\ArrayModel();
+		$this->factories = new ArrayModel();
 		$this->factory   = new Factory($this->factories->find(1));
 	}
 
@@ -52,9 +55,9 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 
 	public function testObjectsBelongsTo()
 	{
-		$machines = new \CIModuleTests\Support\Models\MachineModel();
+		$machines = new MachineModel();
 		$object   = $machines->with(false)->find(3);
-		$machine  = new \CIModuleTests\Support\Entities\Machine((array)$object);
+		$machine  = new Machine((array) $object);
 
 		$factory = $machine->relations('factories');
 
@@ -63,9 +66,9 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 
 	public function testKeysBelongsTo()
 	{
-		$machines = new \CIModuleTests\Support\Models\MachineModel();
+		$machines = new MachineModel();
 		$object   = $machines->with(false)->find(3);
-		$machine  = new \CIModuleTests\Support\Entities\Machine((array)$object);
+		$machine  = new Machine((array) $object);
 
 		$factoryId = $machine->relations('factories', true);
 
@@ -74,9 +77,9 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 
 	public function testArrayHasMany()
 	{
-		$servicers = new \CIModuleTests\Support\Models\ServicerModel();
+		$servicers = new ServicerModel();
 		$object    = $servicers->with(false)->find(2);
-		$servicer  = new \CIModuleTests\Support\Entities\Servicer((array)$object);
+		$servicer  = new Servicer((array) $object);
 		
 		$lawyers = $servicer->relations('lawyers');
 
@@ -94,7 +97,7 @@ class RelationsTest extends CIModuleTests\Support\DatabaseTestCase
 
 	public function testRelationsMatchModelWith()
 	{
-		$factories = new \CIModuleTests\Support\Models\FactoryModel();
+		$factories = new FactoryModel();
 		$factory   = $factories->with('workers')->find(1);
 		
 		$workers = $this->factory->relations('workers');

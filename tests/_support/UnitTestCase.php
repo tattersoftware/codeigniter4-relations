@@ -1,8 +1,9 @@
-<?php namespace CIModuleTests\Support;
+<?php namespace Tests\Support;
 
-use CodeIgniter\Config\Services;
+use Config\Services;
+use CodeIgniter\Test\CIUnitTestCase;
 
-class UnitTestCase extends \CodeIgniter\Test\CIUnitTestCase
+class UnitTestCase extends CIUnitTestCase
 {
 	/**
 	 * Instance of the library.

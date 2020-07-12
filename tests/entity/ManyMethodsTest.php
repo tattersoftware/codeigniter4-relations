@@ -1,15 +1,16 @@
-<?php
+<?php namespace Tests\Support\Models;
 
-use CIModuleTests\Support\Entities\Factory;
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\Entities\Factory;
 use Tatter\Relations\Exceptions\RelationsException;
 
-class ManyMethodsTest extends CIModuleTests\Support\DatabaseTestCase
+class ManyMethodsTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->factories = new \CIModuleTests\Support\Models\ArrayModel();
+		$this->factories = new ArrayModel();
 		$this->factory   = new Factory($this->factories->find(1));
 	}
 

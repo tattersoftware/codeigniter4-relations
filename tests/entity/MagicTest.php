@@ -1,20 +1,21 @@
-<?php
+<?php namespace Tests\Support\Models;
 
-use CIModuleTests\Support\Entities\Factory;
-use CIModuleTests\Support\Entities\Machine;
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\Entities\Factory;
+use Tests\Support\Entities\Machine;
 use Tatter\Relations\Exceptions\RelationsException;
 
-class MagicTest extends CIModuleTests\Support\DatabaseTestCase
+class MagicTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->factories = new \CIModuleTests\Support\Models\ArrayModel();
+		$this->factories = new ArrayModel();
 		$this->factory   = new Factory($this->factories->find(1));
 		
-		$this->machines = new \CIModuleTests\Support\Models\MachineModel();
-		$this->machine  = new Machine((array)$this->machines->with(false)->find(7));
+		$this->machines = new MachineModel();
+		$this->machine  = new Machine((array) $this->machines->with(false)->find(7));
 	}
 
 	public function testGetIgnoresUnmatched()
@@ -40,7 +41,7 @@ class MagicTest extends CIModuleTests\Support\DatabaseTestCase
 	public function testCallUnmatchedFails()
 	{
 		$this->expectException(\BadMethodCallException::class);
-		$this->expectExceptionMessage('Method CIModuleTests\Support\Entities\Factory::doesJingle does not exist.');
+		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::doesJingle does not exist.');
 		
 		$this->factory->doesJingle();
 	}
@@ -48,7 +49,7 @@ class MagicTest extends CIModuleTests\Support\DatabaseTestCase
 	public function testCallCaseFails()
 	{
 		$this->expectException(\BadMethodCallException::class);
-		$this->expectExceptionMessage('Method CIModuleTests\Support\Entities\Factory::hasworkers does not exist.');
+		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::hasworkers does not exist.');
 		
 		$this->factory->hasworkers();
 	}
@@ -56,7 +57,7 @@ class MagicTest extends CIModuleTests\Support\DatabaseTestCase
 	public function testCallTooManyArgsFails()
 	{
 		$this->expectException(\ArgumentCountError::class);
-		$this->expectExceptionMessage('Too many arguments to function CIModuleTests\Support\Entities\Factory::hasWorkers, 4 passed and at most 1 expected.');
+		$this->expectExceptionMessage('Too many arguments to function Tests\Support\Entities\Factory::hasWorkers, 4 passed and at most 1 expected.');
 		
 		$this->factory->hasWorkers([1], 2, 3, 4);
 	}

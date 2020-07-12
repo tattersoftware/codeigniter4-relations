@@ -1,4 +1,4 @@
-<?php namespace CIModuleTests\Support\Database\Migrations;
+<?php namespace Tests\Support\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
@@ -173,6 +173,7 @@ class CreateTestTables extends Migration
 		$this->forge->dropTable('machines_servicers');
 
 		$this->forge->dropTable('lawyers');
+		$this->forge->dropTable('lawsuits');
 		
 		$this->db->enableForeignKeyChecks();
 	}

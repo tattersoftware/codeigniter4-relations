@@ -1,13 +1,17 @@
 <?php
 
-class PassThroughTest extends CIModuleTests\Support\DatabaseTestCase
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\Models\FactoryModel;
+use Tests\Support\Models\NormalModel;
+
+class PassThroughTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->extended = new \CIModuleTests\Support\Models\FactoryModel();
-		$this->normal   = new \CIModuleTests\Support\Models\NormalModel();
+		$this->extended = new FactoryModel();
+		$this->normal   = new NormalModel();
 	}
 	
 	public function testFindId()

@@ -1,15 +1,18 @@
 <?php
 
-use CIModuleTests\Support\Entities\Factory;
+use Tests\Support\DatabaseTestCase;
+use Tests\Support\Entities\Factory;
+use Tests\Support\Entities\Propertyless;
+use Tests\Support\Models\ArrayModel;
 use Tatter\Relations\Exceptions\RelationsException;
 
-class ConstructTest extends CIModuleTests\Support\DatabaseTestCase
+class ConstructTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->factories = new \CIModuleTests\Support\Models\ArrayModel();
+		$this->factories = new ArrayModel();
 	}
 	
 	public function testConstructSuccess()
@@ -26,8 +29,8 @@ class ConstructTest extends CIModuleTests\Support\DatabaseTestCase
 		$row = $this->factories->find(1);
 
 		$this->expectException(RelationsException::class);
-		$this->expectExceptionMessage('Class CIModuleTests\Support\Entities\Propertyless must have the table property to use relations');
+		$this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
 		
-		$factory = new \CIModuleTests\Support\Entities\Propertyless($row);
+		$factory = new Propertyless($row);
 	}
 }

@@ -1,16 +1,18 @@
-<?php
+<?php namespace Tests\Support\Models;
 
-class MethodsTest extends CIModuleTests\Support\DatabaseTestCase
+use Tests\Support\DatabaseTestCase;
+
+class MethodsTest extends DatabaseTestCase
 {
 	public function setUp(): void
 	{
 		parent::setUp();
 		
-		$this->factories = new \CIModuleTests\Support\Models\FactoryModel();
-		$this->lawyers   = new \CIModuleTests\Support\Models\LawyerModel();
-		$this->machines  = new \CIModuleTests\Support\Models\MachineModel();
-		$this->servicers = new \CIModuleTests\Support\Models\ServicerModel();
-		$this->workers   = new \CIModuleTests\Support\Models\WorkerModel();
+		$this->factories = new FactoryModel();
+		$this->lawyers   = new LawyerModel();
+		$this->machines  = new MachineModel();
+		$this->servicers = new ServicerModel();
+		$this->workers   = new WorkerModel();
 	}
 	
 	public function testReindex()
@@ -29,7 +31,7 @@ class MethodsTest extends CIModuleTests\Support\DatabaseTestCase
 	
 	public function testWithExplicit()
 	{
-		$worker = $this->workers->with('factories')->find(1);
+		$worker  = $this->workers->with('factories')->find(1);
 		$factory = $this->factories->with(false)->find(1);
 		
         $this->assertEquals($factory, reset($worker->factories));
