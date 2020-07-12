@@ -14,28 +14,6 @@ trait ModelTrait
 	 */
 	protected $reindex = true;
 	
-	
-	/**
-	 * Validate this class then call the framework Model constructor.
-	 *
-	 * @param ConnectionInterface|null $db
-	 * @param ValidationInterface|null $validation
-	 */
-	public function __construct(ConnectionInterface &$db = null, ValidationInterface $validation = null)
-	{
-		// Verify everything is correct
-		$this->_isRelatable();
-	
-		// Initialize any missing class properties
-		// Array of related tables to fetch from when using finders
-		$this->with = empty($this->with) ? [] : $this->with;
-	
-		// Array of tables to block from loading relations
-		$this->without = empty($this->without) ? [] : $this->without;
-
-        parent::__construct($db, $validation);
-	}
-	
 	/**
 	 * Add related tables to load along with the next finder.
 	 *
@@ -66,7 +44,7 @@ trait ModelTrait
 		}
 		else
 		{
-			$this->tmpWith = array_merge($this->with, $with);
+			$this->tmpWith = array_merge($this->getWith(), $with);
 		}
 		
 		return $this;
@@ -92,9 +70,29 @@ trait ModelTrait
 			$tables = [$tables];
 		}
 	
-		$this->tmpWithout = array_merge($this->without, $tables);
+		$this->tmpWithout = array_merge($this->getWithout(), $tables);
 		
 		return $this;
+	}
+	
+	/**
+	 * Return $with
+	 *
+	 * @return array
+	 */
+	protected function getWith(): array
+	{
+		return empty($this->with) ? [] : $this->with;
+	}
+	
+	/**
+	 * Return $withOut
+	 *
+	 * @return array
+	 */
+	protected function getWithout(): array
+	{
+		return empty($this->without) ? [] : $this->without;
 	}
 	
 	/**
@@ -226,12 +224,12 @@ trait ModelTrait
 		// If no tmpWith was set then use this model's default
 		if (! isset($this->tmpWith))
 		{
-			$this->tmpWith = $this->with;
+			$this->tmpWith = $this->getWith();
 		}
 		// If no tmpWithout was set then use this model's default
 		if (! isset($this->tmpWithout))
 		{
-			$this->tmpWithout = $this->without;
+			$this->tmpWithout = $this->getWithout();
 		}
 		// If no tmpReindex was set then use this model's default
 		if (! isset($this->tmpReindex))

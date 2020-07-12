@@ -3,6 +3,7 @@
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\Entities\Factory;
 use Tests\Support\Entities\Machine;
+use Tests\Support\Entities\Propertyless;
 use Tatter\Relations\Exceptions\RelationsException;
 
 class MagicTest extends DatabaseTestCase
@@ -21,6 +22,16 @@ class MagicTest extends DatabaseTestCase
 	public function testGetIgnoresUnmatched()
 	{
         $this->assertNull($this->factory->racecars);
+	}
+	
+	public function testRequiresProperties()
+	{
+		$row = $this->factories->find(1);
+
+		$this->expectException(RelationsException::class);
+		$this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
+		
+		$factory = (new Propertyless($row))->_getRelationship('foobar');
 	}
 
 	public function testGetSuccess()
