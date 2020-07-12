@@ -131,7 +131,7 @@ trait BaseTrait
 			unset($class);
 			
 			// If this was called from a model then check for another Relations model (to prevent nesting loops)
-			if ($builder instanceof self)
+			if (method_exists($builder, '_getRelations'))
 			{
 				// Don't reindex (we'll do our own below)
 				$builder->reindex(false);
