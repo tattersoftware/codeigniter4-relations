@@ -2,7 +2,7 @@
 
 Entity relationships for CodeIgniter 4
 
-[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPUnit)
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3APHPUnit)
 
 
 ## Quick Start
