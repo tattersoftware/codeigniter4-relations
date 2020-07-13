@@ -11,9 +11,9 @@ class MagicTest extends DatabaseTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		
-		$this->factories = new ArrayModel();
-		$this->factory   = new Factory($this->factories->find(1));
+
+		$this->row     = $this->db->table('factories')->where('id', 1)->get()->getRowArray();
+		$this->factory = new Factory($this->row);
 		
 		$this->machines = new MachineModel();
 		$this->machine  = new Machine((array) $this->machines->with(false)->find(7));
@@ -26,12 +26,10 @@ class MagicTest extends DatabaseTestCase
 	
 	public function testRequiresProperties()
 	{
-		$row = $this->factories->find(1);
-
 		$this->expectException(RelationsException::class);
 		$this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
 		
-		$factory = (new Propertyless($row))->_getRelationship('foobar');
+		$factory = (new Propertyless($this->row))->_getRelationship('foobar');
 	}
 
 	public function testGetSuccess()

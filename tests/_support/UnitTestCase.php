@@ -17,6 +17,7 @@ class UnitTestCase extends CIUnitTestCase
 		// Configure and inject the Schemas service
 		$config         = new \Tatter\Schemas\Config\Schemas();
 		$config->silent = false;
+		$config->ignoredNamespaces = [];
 		
 		$schemas = new \Tatter\Schemas\Schemas($config);
         Services::injectMock('schemas', $schemas);

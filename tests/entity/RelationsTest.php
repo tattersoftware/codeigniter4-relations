@@ -11,9 +11,9 @@ class RelationsTest extends DatabaseTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		
-		$this->factories = new ArrayModel();
-		$this->factory   = new Factory($this->factories->find(1));
+
+		$this->row     = $this->db->table('factories')->where('id', 1)->get()->getRowArray();
+		$this->factory = new Factory($this->row);
 	}
 
 	public function testUnknownTableFails()
@@ -80,7 +80,7 @@ class RelationsTest extends DatabaseTestCase
 		$servicers = new ServicerModel();
 		$object    = $servicers->with(false)->find(2);
 		$servicer  = new Servicer((array) $object);
-		
+	
 		$lawyers = $servicer->relations('lawyers');
 
 		$this->assertCount(3, $lawyers);

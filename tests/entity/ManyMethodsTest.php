@@ -9,9 +9,9 @@ class ManyMethodsTest extends DatabaseTestCase
 	public function setUp(): void
 	{
 		parent::setUp();
-		
-		$this->factories = new ArrayModel();
-		$this->factory   = new Factory($this->factories->find(1));
+
+		$this->row     = $this->db->table('factories')->where('id', 1)->get()->getRowArray();
+		$this->factory = new Factory($this->row);
 	}
 
 	public function testHasAnySuccess()
@@ -23,8 +23,9 @@ class ManyMethodsTest extends DatabaseTestCase
 
 	public function testHasAnyFail()
 	{
-		$factory = new Factory($this->factories->find(4));
-		$method = $this->getPrivateMethodInvoker($factory, '_has');
+		$row     = $this->db->table('factories')->where('id', 4)->get()->getRowArray();
+		$factory = new Factory($row);
+		$method  = $this->getPrivateMethodInvoker($factory, '_has');
 		
 		$this->assertFalse($method('workers'));
 	}
