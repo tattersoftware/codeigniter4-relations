@@ -82,7 +82,18 @@ trait ModelTrait
 	 */
 	protected function getWith(): array
 	{
-		return empty($this->with) ? [] : $this->with;
+		// Ensure $this->with is set at all
+		if(empty($this->with)){
+			$this->with = [];
+		}
+		
+		// Force a single table name into an array
+		if (!is_array($this->with))
+		{
+			$this->with = [$this->with];
+		}
+
+		return $this->with;
 	}
 	
 	/**
