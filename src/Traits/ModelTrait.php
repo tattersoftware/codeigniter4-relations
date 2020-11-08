@@ -83,12 +83,13 @@ trait ModelTrait
 	protected function getWith(): array
 	{
 		// Ensure $this->with is set at all
-		if(empty($this->with)){
+		if (empty($this->with))
+		{
 			$this->with = [];
 		}
 		
 		// Force a single table name into an array
-		if (!is_array($this->with))
+		if (! is_array($this->with))
 		{
 			$this->with = [$this->with];
 		}
