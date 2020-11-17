@@ -76,6 +76,18 @@ trait ModelTrait
 	}
 	
 	/**
+	 * Temporarily blocks all tables from being loaded as relations with the next finder.
+	 *
+	 * @return $this
+	 */
+	public function withoutAll()
+	{
+		$this->tmpWithout = array_merge($this->getWithout(), $this->getWith());
+		
+		return $this;
+	}
+	
+	/**
 	 * Return $with
 	 *
 	 * @return array
