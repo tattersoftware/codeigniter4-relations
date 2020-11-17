@@ -80,7 +80,7 @@ trait ModelTrait
 	 *
 	 * @return $this
 	 */
-	public function withoutAll()
+	public function withoutAny()
 	{
 		$this->tmpWithout = array_merge($this->getWithout(), $this->getWith());
 		
