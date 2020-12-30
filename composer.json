@@ -1,5 +1,6 @@
 {
 	"name": "tatter/relations",
+	"type": "library",
 	"description": "Entity relationships for CodeIgniter 4",
 	"keywords": [
 		"codeigniter",
@@ -20,6 +21,27 @@
 			"role": "Developer"
 		}
 	],
+	"require": {
+		"php": "^7.2|^8.0",
+		"tatter/schemas": "^2.0"
+	},
+	"require-dev": {
+		"codeigniter4/codeigniter4": "dev-develop",
+		"tatter/tools": "^1.3"
+	},
+	"autoload": {
+		"psr-4": {
+			"Tatter\\Relations\\": "src"
+		},
+		"exclude-from-classmap": [
+			"**/Database/Migrations/**"
+		]
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\Support\\": "tests/_support"
+		}
+	},
 	"repositories": [
 		{
 			"type": "vcs",
@@ -28,29 +50,9 @@
 	],
 	"minimum-stability": "dev",
 	"prefer-stable": true,
-	"require": {
-		"php" : ">=7.2",
-		"tatter/schemas": "^2.0"
-	},
-	"require-dev": {
-		"codeigniter4/codeigniter4": "dev-develop",
-		"mikey179/vfsstream": "1.6.*",
-		"phpunit/phpunit" : "^8.5"
-	},
-	"autoload": {
-		"psr-4": {
-			"Tatter\\Relations\\": "src"
-		}
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Tests\\Support\\": "tests/_support"
-		}
-	},
 	"scripts": {
-		"test": "phpunit",
-		"post-update-cmd": [
-			"composer dump-autoload"
-		]
+		"analyze": "phpstan analyze",
+		"style": "phpcbf --standard=./vendor/codeigniter4/codeigniter4-standard/CodeIgniter4 tests/ src/",
+		"test": "phpunit"
 	}
 }
