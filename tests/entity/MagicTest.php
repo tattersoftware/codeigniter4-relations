@@ -23,6 +23,18 @@ class MagicTest extends DatabaseTestCase
 	{
         $this->assertNull($this->factory->racecars);
 	}
+
+	public function testGetRespectsNull()
+	{
+		$machine = new Machine([
+			'factory_id' => 1,
+			'factory' => null,
+		]);
+
+		$result = $machine->factory;
+
+        $this->assertNull($result);
+	}
 	
 	public function testRequiresProperties()
 	{

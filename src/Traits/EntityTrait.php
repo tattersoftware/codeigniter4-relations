@@ -16,7 +16,7 @@ trait EntityTrait
 		// First check the framework's version
 		$result = parent::__get($key);
 		
-		if ($result !== null)
+		if ($result !== null || array_key_exists($key, $this->attributes))
 		{
 			return $result;
 		}
