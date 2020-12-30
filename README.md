@@ -1,9 +1,9 @@
 # Tatter\Relations
-
 Entity relationships for CodeIgniter 4
 
-[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3APHPUnit)
-
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPUnit)
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPStan/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPStan)
+[![Coverage Status](https://coveralls.io/repos/github/tattersoftware/codeigniter4-relations/badge.svg?branch=develop)](https://coveralls.io/github/tattersoftware/codeigniter4-relations?branch=develop)
 
 ## Quick Start
 
