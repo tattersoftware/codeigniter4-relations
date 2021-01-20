@@ -153,6 +153,12 @@ trait EntityTrait
 	 */
 	public function relations(string $tableName, $keysOnly = false)
 	{
+		// If entity primary key is not set then finish
+		if (!isset($this->attributes[$this->primaryKey]))
+		{
+		    return null;
+		}
+		
 		// Use BaseTrait to get related items
 		$items = $this->_getRelations($tableName);
 
