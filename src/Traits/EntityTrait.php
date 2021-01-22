@@ -76,6 +76,8 @@ trait EntityTrait
 	 */
 	public function __call(string $name, array $arguments)
 	{
+		$this->_verifyRelatable();
+		
 		$verbs = ['has', 'set', 'add', 'remove'];
 
 		// Parse the name to check for supported relation verbs
