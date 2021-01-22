@@ -154,7 +154,7 @@ trait EntityTrait
 	public function relations(string $tableName, $keysOnly = false)
 	{
 		// If entity primary key is not set then finish
-		if (!isset($this->attributes[$this->primaryKey]))
+		if (! isset($this->attributes[$this->primaryKey]))
 		{
 		    return null;
 		}
