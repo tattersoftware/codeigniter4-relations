@@ -76,6 +76,8 @@ trait EntityTrait
 	 */
 	public function __call(string $name, array $arguments)
 	{
+		$this->_verifyRelatable();
+		
 		$verbs = ['has', 'set', 'add', 'remove'];
 
 		// Parse the name to check for supported relation verbs
@@ -153,6 +155,12 @@ trait EntityTrait
 	 */
 	public function relations(string $tableName, $keysOnly = false)
 	{
+		// If entity primary key is not set then finish
+		if (! isset($this->attributes[$this->primaryKey]))
+		{
+		    return null;
+		}
+		
 		// Use BaseTrait to get related items
 		$items = $this->_getRelations($tableName);
 
