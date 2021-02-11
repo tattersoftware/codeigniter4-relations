@@ -51,6 +51,11 @@ jobs:
       - name: Test with PHPUnit
         run: vendor/bin/phpunit --verbose --coverage-text
 
+      - name: Mutate with Infection
+        run: |
+          git fetch --depth=1 origin $GITHUB_BASE_REF
+          php vendor/bin/infection --threads=2 --git-diff-base=origin/$GITHUB_BASE_REF --git-diff-filter=AM --logger-github
+
       - if: matrix.php-versions == '7.4'
         name: Run Coveralls
         run: |
