@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.2', '7.3', '7.4', '8.0']
+        php-versions: ['7.3', '7.4', '8.0']
 
     runs-on: ubuntu-latest
 
@@ -43,24 +43,29 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      # Infection does not support 7.3 so remove it before running Composer
+      - if: matrix.php-versions == '7.3'
+        run: composer remove --no-progress --no-update --no-scripts --dev infection/infection
+
       - name: Install dependencies
-        run: composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+        run: composer update --no-progress --no-interaction --prefer-dist --optimize-autoloader
         env:
           COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
       - name: Test with PHPUnit
         run: vendor/bin/phpunit --verbose --coverage-text
 
-      - name: Mutate with Infection
+      - if: matrix.php-versions != '7.3'
+        name: Mutate with Infection
         run: |
           git fetch --depth=1 origin $GITHUB_BASE_REF
           php vendor/bin/infection --threads=2 --git-diff-base=origin/$GITHUB_BASE_REF --git-diff-filter=AM --logger-github
 
-      - if: matrix.php-versions == '7.4'
+      - if: matrix.php-versions == '8.0'
         name: Run Coveralls
         run: |
           composer global require php-coveralls/php-coveralls:^2.4
-          php-coveralls --coverage_clover=build/logs/clover.xml -v
+          php-coveralls --coverage_clover=build/phpunit/clover.xml -v
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_PARALLEL: true
