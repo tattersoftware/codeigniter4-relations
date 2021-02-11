@@ -59,7 +59,7 @@ jobs:
         name: Mutate with Infection
         run: |
           git fetch --depth=1 origin $GITHUB_BASE_REF
-          php vendor/bin/infection --threads=2 --git-diff-base=origin/$GITHUB_BASE_REF --git-diff-filter=AM --logger-github
+          php vendor/bin/infection --threads=2 --git-diff-base=origin/$GITHUB_BASE_REF --git-diff-filter=AM --logger-github --min-msi=80
 
       - if: matrix.php-versions == '8.0'
         name: Run Coveralls
