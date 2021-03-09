@@ -9,64 +9,87 @@ use Tatter\Schemas\Structures\Schema;
 trait BaseTrait
 {
 	/**
+	 * Determine table name tied to a relationship.
+	 *
+	 * @param string $relationName  Name of the target relationship
+	 *
+	 * @return string
+	 */
+	public function _getTableName($relationName): string
+	{
+		$schema = $this->_schema();
+
+		if (isset($schema->tables->{$this->table}->relations->{$relationName})) {
+			$tmpRelation = $schema->tables->{$this->table}->relations->{$relationName};
+		  $table = $schema->tables->{$tmpRelation->table};
+			return $table->name;
+		} else {
+			throw RelationsException::forUnknownTable($relationName);
+		}
+	}
+
+	/**
 	 * Uses the schema to determine this class's relationship to a table
 	 *
-	 * @param string  $tableName  Name of the target table
+	 * @param string  $relationName  Name of the target relationship
 	 *
 	 * @return Relation
 	 */
-	public function _getRelationship($tableName): Relation
+	public function _getRelationship($relationName): Relation
 	{
 		$this->_verifyRelatable();
 
 		// Get the schema
 		$schema = $this->_schema();
 
+  	$tableName = $this->_getTableName($relationName);
 		// Make sure the schema knows the target table
 		if (! isset($schema->tables->{$tableName}))
 		{
-			throw RelationsException::forUnknownTable($tableName);
+			throw RelationsException::forUnknownTable($relationName);
 		}
 
 		// Fetch the target table
 		$table = $schema->tables->{$tableName};
 
 		// Make sure the tables are actually related
-		if (! isset($schema->tables->{$this->table}->relations->{$table->name}))
+		if (! isset($schema->tables->{$this->table}->relations->{$relationName}))
 		{
-			throw RelationsException::forUnknownRelation($this->table, $table->name);
+			throw RelationsException::forUnknownRelation($this->table, $relationName);
 		}
 
 		// Get the relation
-		$relation = $schema->tables->{$this->table}->relations->{$table->name};
+		$relation = $schema->tables->{$this->table}->relations->{$relationName};
 
 		// Verify that pivots are defined
 		if (empty($relation->pivots))
 		{
-			throw RelationsException::forMissingPivots($this->table, $tableName);
+			throw RelationsException::forMissingPivots($this->table, $relationName);
 		}
-		
+
 		return $relation;
 	}
 
 	/**
 	 * Uses the schema to load related items
 	 *
-	 * @param string      $tableName  Name of the table for related items
+	 * @param string      $relationName  Name of the relation
 	 * @param array|null  $ids        Filter for this class's primary keys
 	 *
 	 * @return array  [$id => [$relatedItems]], or [$id => $relatedItem] for singletons
 	 */
-	public function _getRelations($tableName, $ids = null): array
+	public function _getRelations($relationName, $ids = null): array
 	{
 		$this->_verifyRelatable();
+
+		$tableName = $this->_getTableName($relationName);
 
 		// Fetch the target table
 		$table = $this->_schema()->tables->{$tableName};
 
 		// Get the relationship
-		$relation = $this->_getRelationship($tableName);
-		
+		$relation = $this->_getRelationship($relationName);
+
 		// Get the config
 		$config = config('Relations');
 
@@ -78,7 +101,7 @@ trait BaseTrait
 			$builder    = new $class();
 			$returnType = $builder->returnType;
 			unset($class);
-			
+
 			// If this was called from a model then check for another Relations model (to prevent nesting loops)
 			if (method_exists($builder, '_getRelations'))
 			{
