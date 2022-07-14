@@ -110,4 +110,21 @@ final class RelationsTest extends DatabaseTestCase
         /** @var Factory $factory */
         $this->assertEquals($factory->workers, $workers);
     }
+
+    public function testWithDeletedRelations()
+    {
+        $object   = (new MachineModel())->with(false)->find(4);
+        $machine1 = new Machine((array) $object);
+        $this->assertNull($machine1->factory);
+
+        $machine2                                 = new class () extends Machine {
+            protected array $withDeletedRelations = ['factories'];
+        };
+        $machine2->fill((array) $object);
+
+        $result = $machine2->factory;
+
+        $this->assertNotNull($result);
+        $this->assertSame('widget', $result->uid);
+    }
 }

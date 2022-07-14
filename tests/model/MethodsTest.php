@@ -86,4 +86,14 @@ final class MethodsTest extends DatabaseTestCase
 
         $this->assertEquals($factories[3], $machines[6]->factory);
     }
+
+    public function testWithDeletedRelations()
+    {
+        $worker = $this->workers->with('factories')->find(4);
+        $this->assertCount(1, $worker->factories);
+
+        $this->setPrivateProperty($this->workers, 'withDeletedRelations', ['factories']);
+        $worker = $this->workers->with('factories')->find(4);
+        $this->assertCount(2, $worker->factories);
+    }
 }

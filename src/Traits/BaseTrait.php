@@ -151,7 +151,16 @@ trait BaseTrait
 
         // If the model is available then use it to get the result
         // (Bonus: triggers model's afterFind)
-        $results = isset($table->model) ? $builder->find() : $builder->get()->getResult();
+        if (isset($table->model)) {
+            // Check if this table should include soft deletes
+            if (isset($this->withDeletedRelations) && in_array($table->name, $this->withDeletedRelations, true)) {
+                $builder->withDeleted();
+            }
+
+            $results = $builder->find();
+        } else {
+            $results = $builder->get()->getResult();
+        }
 
         // Clean up
         unset($table, $builder);
