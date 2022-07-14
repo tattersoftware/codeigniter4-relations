@@ -213,7 +213,7 @@ trait EntityTrait
         foreach ($this->attributes[$tableName] as $entity) {
             $key = is_array($entity) ? $entity[$this->primaryKey] : $entity->{$this->primaryKey};
 
-            if (in_array($key, $keys, true)) {
+            if (in_array($key, $keys, false)) {
                 $matched++;
 
                 if ($matched >= count($keys)) {
