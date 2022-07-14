@@ -1,5 +1,6 @@
 <?php namespace Tests\Support;
 
+use Tatter\Schemas\Config\Schemas;
 use Config\Services;
 use CodeIgniter\Test\CIUnitTestCase;
 
@@ -10,12 +11,12 @@ class UnitTestCase extends CIUnitTestCase
 	 */
 	protected $schemas;
 
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 		
 		// Configure and inject the Schemas service
-		$config         = new \Tatter\Schemas\Config\Schemas();
+		$config         = new Schemas();
 		$config->silent = false;
 		$config->ignoredNamespaces = [];
 		

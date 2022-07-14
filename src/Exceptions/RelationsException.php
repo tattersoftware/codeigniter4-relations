@@ -1,9 +1,10 @@
 <?php namespace Tatter\Relations\Exceptions;
 
+use RuntimeException;
 use CodeIgniter\Exceptions\ExceptionInterface;
 use CodeIgniter\Exceptions\FrameworkException;
 
-class RelationsException extends \RuntimeException implements ExceptionInterface
+class RelationsException extends RuntimeException implements ExceptionInterface
 {
 	public static function forUnknownTable($tableName)
 	{

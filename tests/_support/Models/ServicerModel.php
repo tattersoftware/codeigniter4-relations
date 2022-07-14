@@ -1,10 +1,11 @@
 <?php namespace Tests\Support\Models;
 
+use Tatter\Relations\Traits\ModelTrait;
 use CodeIgniter\Model;
 
 class ServicerModel extends Model
 {
-	use \Tatter\Relations\Traits\ModelTrait;
+	use ModelTrait;
 
 	protected $table      = 'servicers';
 	protected $primaryKey = 'id';

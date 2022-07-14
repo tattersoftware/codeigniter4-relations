@@ -1,5 +1,8 @@
 <?php namespace Tatter\Relations\Traits;
 
+use BadMethodCallException;
+use ArgumentCountError;
+use RuntimeException;
 trait EntityTrait
 {
 	use BaseTrait;
@@ -56,14 +59,8 @@ trait EntityTrait
 
 		// Convert the key to table format
 		$tableName = plural(strtolower($key));
-		
-		// Check for a matching table
-		if (isset($schema->tables->$tableName))
-		{
-			return true;
-		}
-		
-		return false;
+  // Check for a matching table
+  return isset($schema->tables->$tableName);
 	}
 
 	/**
@@ -94,7 +91,7 @@ trait EntityTrait
 		// If no verb matched then this is an unrelated call
 		if (empty($verb))
 		{		
-			throw new \BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $name));
+			throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $name));
 		}
 		
 		// Trim the verb and check what is left
@@ -104,13 +101,13 @@ trait EntityTrait
 		// https://stackoverflow.com/questions/2814880/how-to-check-if-letter-is-upper-or-lower-in-php
 		if (! preg_match('~^\p{Lu}~u', $target))
 		{
-			throw new \BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $name));
+			throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $name));
 		}
 
 		// Validate argument count
 		if (count($arguments) > 1)
 		{
-			throw new \ArgumentCountError(sprintf('Too many arguments to function %s::%s, %s passed and at most 1 expected.', static::class, $name, count($arguments)));
+			throw new ArgumentCountError(sprintf('Too many arguments to function %s::%s, %s passed and at most 1 expected.', static::class, $name, count($arguments)));
 		}
 
 		// Format target as a valid table reference
@@ -270,12 +267,11 @@ trait EntityTrait
 				// Get the pivot table info
 				$pivotTable = $relation->pivots[0][2];
 				$pivotId    = $relation->pivots[0][3];
-				$targetId   = $relation->pivots[1][1];
 
 				$builder = db_connect()->table($pivotTable);
 
 				// Clear existing relations
-				$result = $builder->where($pivotId, $this->attributes[$this->primaryKey])->delete();
+				$builder->where($pivotId, $this->attributes[$this->primaryKey])->delete();
 
 				// Remove from the entity so if they are requested they will reload
 				unset($this->attributes[$tableName]);
@@ -290,7 +286,7 @@ trait EntityTrait
 				return $this->_add($tableName, $keys);
 			
 			default:
-				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
+				throw new RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
 		}
 
 		return false;
@@ -351,7 +347,7 @@ trait EntityTrait
 				return true;
 			
 			default:
-				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
+				throw new RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
 		}
 
 		return false;
@@ -394,7 +390,7 @@ trait EntityTrait
 
 				// Remove the relations
 				$builder = db_connect()->table($pivotTable);
-				$result = $builder
+				$builder
 					->where($pivotId,    $this->attributes[$this->primaryKey])
 					->whereIn($targetId, $keys)
 					->delete();
@@ -405,7 +401,7 @@ trait EntityTrait
 				return true;
 			
 			default:
-				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
+				throw new RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
 		}
 
 		return false;

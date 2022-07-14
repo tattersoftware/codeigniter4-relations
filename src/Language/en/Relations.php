@@ -1,5 +1,7 @@
 <?php
 
+namespace Tatter\Relations\Language\en;
+
 return [
 	'noSchemas'         => 'Unable to load Schemas library!',
 	'invalidWithout'    => '"Without" parameter must be a table name or array of names',

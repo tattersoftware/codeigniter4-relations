@@ -1,5 +1,6 @@
 <?php namespace Tatter\Relations\Traits;
 
+use RuntimeException;
 use Tatter\Relations\Exceptions\RelationsException;
 use Tatter\Relations\Interfaces\RelatableInterface;
 use Tatter\Schemas\Structures\Relation;
@@ -9,13 +10,11 @@ use Tatter\Schemas\Structures\Table;
 trait BaseTrait
 {
 	/**
-	 * Uses the schema to determine this class's relationship to a table
-	 *
-	 * @param string  $tableName  Name of the target table
-	 *
-	 * @return Relation
-	 */
-	public function _getRelationship($tableName): Relation
+  * Uses the schema to determine this class's relationship to a table
+  *
+  * @param string  $tableName  Name of the target table
+  */
+ public function _getRelationship($tableName): Relation
 	{
 		$this->_verifyRelatable();
 
@@ -163,15 +162,7 @@ trait BaseTrait
 		
 		// If the model is available then use it to get the result
 		// (Bonus: triggers model's afterFind)
-		if (isset($table->model))
-		{
-			$results = $builder->find();
-		}
-		// No model - use a generic getResult
-		else
-		{
-			$results = $builder->get()->getResult();
-		}
+		$results = isset($table->model) ? $builder->find() : $builder->get()->getResult();
 		
 		// Clean up
 		unset($table, $builder);
@@ -207,11 +198,9 @@ trait BaseTrait
 	}
 
 	/**
-	 * Preps the Schemas service with a current schema to share across this library and returns it.
-	 *
-	 * @return Schema
-	 */
-	protected function _schema(): Schema
+  * Preps the Schemas service with a current schema to share across this library and returns it.
+  */
+ protected function _schema(): Schema
 	{
 		$this->_verifyRelatable();
 
@@ -220,7 +209,7 @@ trait BaseTrait
 
 		if (empty($schemas))
 		{
-			throw new \RuntimeException(lang('Relations.noSchemas'));
+			throw new RuntimeException(lang('Relations.noSchemas'));
 		}
 		
 		// Check for a schema using the defaults
@@ -234,7 +223,7 @@ trait BaseTrait
 			if (is_null($schema))
 			{
 				// Give up
-				throw new \RuntimeException(lang('Relations.noSchemas'));
+				throw new RuntimeException(lang('Relations.noSchemas'));
 			}
 		}
 		

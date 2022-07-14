@@ -1,10 +1,11 @@
 <?php namespace Tests\Support\Entities;
 
+use Tatter\Relations\Traits\EntityTrait;
 use CodeIgniter\Entity\Entity;
 
 class Machine extends Entity
 {
-	use \Tatter\Relations\Traits\EntityTrait;
+	use EntityTrait;
 
 	protected $table = 'machines';
 

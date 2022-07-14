@@ -1,5 +1,7 @@
 <?php namespace Tests\Support\Models;
 
+use BadMethodCallException;
+use ArgumentCountError;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\Entities\Factory;
 use Tests\Support\Entities\Machine;
@@ -8,7 +10,7 @@ use Tatter\Relations\Exceptions\RelationsException;
 
 class MagicTest extends DatabaseTestCase
 {
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 
@@ -41,7 +43,7 @@ class MagicTest extends DatabaseTestCase
 		$this->expectException(RelationsException::class);
 		$this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
 		
-		$factory = (new Propertyless($this->row))->_getRelationship('foobar');
+		(new Propertyless($this->row))->_getRelationship('foobar');
 	}
 
 	public function testGetSuccess()
@@ -61,7 +63,7 @@ class MagicTest extends DatabaseTestCase
 
 	public function testCallUnmatchedFails()
 	{
-		$this->expectException(\BadMethodCallException::class);
+		$this->expectException(BadMethodCallException::class);
 		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::doesJingle does not exist.');
 		
 		$this->factory->doesJingle();
@@ -69,7 +71,7 @@ class MagicTest extends DatabaseTestCase
 
 	public function testCallCaseFails()
 	{
-		$this->expectException(\BadMethodCallException::class);
+		$this->expectException(BadMethodCallException::class);
 		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::hasworkers does not exist.');
 		
 		$this->factory->hasworkers();
@@ -77,7 +79,7 @@ class MagicTest extends DatabaseTestCase
 
 	public function testCallTooManyArgsFails()
 	{
-		$this->expectException(\ArgumentCountError::class);
+		$this->expectException(ArgumentCountError::class);
 		$this->expectExceptionMessage('Too many arguments to function Tests\Support\Entities\Factory::hasWorkers, 4 passed and at most 1 expected.');
 		
 		$this->factory->hasWorkers([1], 2, 3, 4);

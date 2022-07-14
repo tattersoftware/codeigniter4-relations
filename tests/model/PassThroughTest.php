@@ -9,7 +9,7 @@ class PassThroughTest extends DatabaseTestCase
     private FactoryModel $extended;
     private NormalModel $normal;
 
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 		

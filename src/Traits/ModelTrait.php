@@ -1,11 +1,12 @@
 <?php namespace Tatter\Relations\Traits;
 
+use RuntimeException;
 use Tatter\Relations\Interfaces\RelatableInterface;
 use Tatter\Schemas\Structures\Schema;
 
 trait ModelTrait
 {
-	use \Tatter\Relations\Traits\BaseTrait;
+	use BaseTrait;
 
 	/**
 	 * Whether to reindex results by the primary key
@@ -38,14 +39,7 @@ trait ModelTrait
 		}
 		
 		// Option to override this model's pre-seeded value
-		if ($overwrite)
-		{
-			$this->tmpWith = $with;
-		}
-		else
-		{
-			$this->tmpWith = array_merge($this->getWith(), $with);
-		}
+		$this->tmpWith = $overwrite ? $with : array_merge($this->getWith(), $with);
 		
 		return $this;
 	}
@@ -63,7 +57,7 @@ trait ModelTrait
 	    // @phpstan-ignore-next-line
 		if (! is_string($tables) && ! is_array($tables))
 		{
-			throw new \RuntimeException(lang('Relations.invalidWithout'));
+			throw new RuntimeException(lang('Relations.invalidWithout'));
 		}
 		
 		if (is_string($tables))
@@ -77,11 +71,9 @@ trait ModelTrait
 	}
 	
 	/**
-	 * Return $with
-	 *
-	 * @return array
-	 */
-	protected function getWith(): array
+  * Return $with
+  */
+ protected function getWith(): array
 	{
 		// Ensure $this->with is set at all
 		if (empty($this->with))
@@ -99,11 +91,9 @@ trait ModelTrait
 	}
 	
 	/**
-	 * Return $withOut
-	 *
-	 * @return array
-	 */
-	protected function getWithout(): array
+  * Return $withOut
+  */
+ protected function getWithout(): array
 	{
 		// Ensure $this->without is set at all
 		if (empty($this->without))
@@ -133,13 +123,12 @@ trait ModelTrait
 	}
 
 	/**
-	 * Enable/disable result reindexing.
-	 *
-	 * @param bool    $bool
-	 *
-	 * @return $this
-	 */
-	public function reindex(bool $bool = true)
+  * Enable/disable result reindexing.
+  *
+  *
+  * @return $this
+  */
+ public function reindex(bool $bool = true)
 	{
 		$this->reindex = $bool;
 		
@@ -189,17 +178,14 @@ trait ModelTrait
 	}
 
 	//--------------------------------------------------------------------
-
-	/**
-	 * Works with the current Query Builder instance to return
-	 * all results, while optionally limiting them.
-	 *
-	 * @param integer $limit
-	 * @param integer $offset
-	 *
-	 * @return array|null
-	 */
-	public function findAll(int $limit = 0, int $offset = 0)
+ /**
+  * Works with the current Query Builder instance to return
+  * all results, while optionally limiting them.
+  *
+  *
+  * @return array|null
+  */
+ public function findAll(int $limit = 0, int $offset = 0)
 	{
 		$data = parent::findAll($limit, $offset);
 		
@@ -301,29 +287,21 @@ trait ModelTrait
 			foreach ($relations as $tableName => $related)
 			{
 				// Assign singletons to a property named for the singular table
-				if ($name = $singletons[$tableName])
-				{
-					if (is_array($item))
-					{
-						$item[$name] = $related[$id] ?? null;
-					}
-					else
-					{
-						$item->$name = $related[$id] ?? null;
-					}
-				}
-				// Non-singletons use the plural table name
-				else
-				{
-					if (is_array($item))
-					{
-						$item[$tableName] = $related[$id] ?? [];
-					}
-					else
+				if ($name = $singletons[$tableName]) {
+        if (is_array($item))
+   					{
+   						$item[$name] = $related[$id] ?? null;
+   					}
+   					else
+   					{
+   						$item->$name = $related[$id] ?? null;
+   					}
+    } elseif (is_array($item)) {
+        $item[$tableName] = $related[$id] ?? [];
+    } else
 					{
 						$item->$tableName = $related[$id] ?? [];
 					}
-				}
 			}
 			
 			if ($this->tmpReindex)
@@ -344,15 +322,13 @@ trait ModelTrait
 	}
 
 	/**
-	 * Reindexes $rows from a finder by their primary key
-	 * Mostly used for consistent return format when no relations are requested
-	 * If multiple rows have the same primary (e.g. a join) it returns the originals
-	 *
-	 * @param array  $rows  Array of rows from the finder
-	 *
-	 * @return array
-	 */
-	public function simpleReindex($rows): array
+  * Reindexes $rows from a finder by their primary key
+  * Mostly used for consistent return format when no relations are requested
+  * If multiple rows have the same primary (e.g. a join) it returns the originals
+  *
+  * @param array  $rows  Array of rows from the finder
+  */
+ public function simpleReindex($rows): array
 	{
 		if (empty($rows))
 		{
@@ -364,15 +340,7 @@ trait ModelTrait
 		foreach ($rows as $item)
 		{
 			// Handle array return types
-			if (is_array($item))
-			{
-				$id = $item[$this->primaryKey] ?? null;
-			}
-			// Handle object return types
-			else
-			{
-				$id = $item->{$this->primaryKey} ?? null;
-			}
+			$id = is_array($item) ? $item[$this->primaryKey] ?? null : $item->{$this->primaryKey} ?? null;
 			
 			// If no primary key or an entry already existed then return it as is
 			// Probably the former is custom select() and the latter is a join()

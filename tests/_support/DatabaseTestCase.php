@@ -36,7 +36,7 @@ class DatabaseTestCase extends UnitTestCase
 	 */
 	protected $namespace = 'Tests\Support';
 
-	public function setUp(): void
+	protected function setUp(): void
 	{
 		parent::setUp();
 

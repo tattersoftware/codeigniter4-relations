@@ -1,10 +1,11 @@
 <?php namespace Tests\Support\Models;
 
+use Tatter\Relations\Traits\ModelTrait;
 use CodeIgniter\Model;
 
 class MachineModel extends Model
 {
-	use \Tatter\Relations\Traits\ModelTrait;
+	use ModelTrait;
 
 	protected $table      = 'machines';
 	protected $primaryKey = 'id';
