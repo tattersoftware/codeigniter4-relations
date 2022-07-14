@@ -29,12 +29,6 @@
         "codeigniter4/framework": "^4.1",
         "tatter/tools": "^2.0"
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/codeigniter4/CodeIgniter4"
-        }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
