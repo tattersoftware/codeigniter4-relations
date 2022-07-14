@@ -1,58 +1,82 @@
 {
-	"name": "tatter/relations",
-	"type": "library",
-	"description": "Entity relationships for CodeIgniter 4",
-	"keywords": [
-		"codeigniter",
-		"codeigniter4",
-		"relations",
-		"relationships",
-		"database",
-		"mapping",
-		"entity"
-	],
-	"homepage": "https://github.com/tattersoftware/codeigniter4-relations",
-	"license": "MIT",
-	"authors": [
-		{
-			"name": "Matthew Gatner",
-			"email": "mgatner@tattersoftware.com",
-			"homepage": "https://tattersoftware.com",
-			"role": "Developer"
-		}
-	],
-	"require": {
-		"php": "^7.2|^8.0",
-		"tatter/schemas": "^2.0"
-	},
-	"require-dev": {
-		"codeigniter4/codeigniter4": "dev-develop",
-		"tatter/tools": "^1.3"
-	},
-	"autoload": {
-		"psr-4": {
-			"Tatter\\Relations\\": "src"
-		},
-		"exclude-from-classmap": [
-			"**/Database/Migrations/**"
-		]
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Tests\\Support\\": "tests/_support"
-		}
-	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/codeigniter4/CodeIgniter4"
-		}
-	],
-	"minimum-stability": "dev",
-	"prefer-stable": true,
-	"scripts": {
-		"analyze": "phpstan analyze",
-		"style": "phpcbf --standard=./vendor/codeigniter4/codeigniter4-standard/CodeIgniter4 tests/ src/",
-		"test": "phpunit"
-	}
+    "name": "tatter/relations",
+    "description": "Entity relationships for CodeIgniter 4",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "codeigniter",
+        "codeigniter4",
+        "relations",
+        "relationships",
+        "database",
+        "mapping",
+        "entity"
+    ],
+    "authors": [
+        {
+            "name": "Matthew Gatner",
+            "email": "mgatner@tattersoftware.com",
+            "homepage": "https://tattersoftware.com",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/tattersoftware/codeigniter4-relations",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "tatter/schemas": "^2.0"
+    },
+    "require-dev": {
+        "codeigniter4/framework": "^4.1",
+        "tatter/tools": "^2.0"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/codeigniter4/CodeIgniter4"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Tatter\\Relations\\": "src"
+        },
+        "exclude-from-classmap": [
+            "**/Database/Migrations/**"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Support\\": "tests/_support"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "infection/extension-installer": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "analyze": [
+            "phpstan analyze",
+            "psalm",
+            "rector process --dry-run"
+        ],
+        "ci": [
+            "Composer\\Config::disableProcessTimeout",
+            "@deduplicate",
+            "@analyze",
+            "@composer normalize --dry-run",
+            "@test",
+            "@inspect",
+            "@style"
+        ],
+        "deduplicate": "phpcpd app/ src/",
+        "inspect": "deptrac analyze --cache-file=build/deptrac.cache",
+        "mutate": "infection --threads=2 --skip-initial-tests --coverage=build/phpunit",
+        "retool": "retool",
+        "style": "php-cs-fixer fix --verbose --ansi --using-cache=no",
+        "test": "phpunit"
+    }
 }
