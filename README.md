@@ -1,8 +1,9 @@
 # Tatter\Relations
 Entity relationships for CodeIgniter 4
 
-[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPUnit)
-[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPStan/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions?query=workflow%3A%22PHPStan)
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPUnit/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions/workflows/phpunit.yml)
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/PHPStan/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions/workflows/phpstan.yml)
+[![](https://github.com/tattersoftware/codeigniter4-relations/workflows/Deptrac/badge.svg)](https://github.com/tattersoftware/codeigniter4-relations/actions/workflows/deptrac.yml)
 [![Coverage Status](https://coveralls.io/repos/github/tattersoftware/codeigniter4-relations/badge.svg?branch=develop)](https://coveralls.io/github/tattersoftware/codeigniter4-relations?branch=develop)
 
 ## Quick Start
@@ -19,10 +20,12 @@ Entity relationships for CodeIgniter 4
 
 Install easily via Composer to take advantage of CodeIgniter 4's autoloading capabilities
 and always be up-to-date:
-* `> composer require tatter/relations`
+```shell
+    > composer require tatter/relations
+```
 
 Or, install manually by downloading the source files and adding the directory to
-`app/Config/Autoload.php`.
+**app/Config/Autoload.php***.
 
 ## Configuration (optional)
 
@@ -50,12 +53,12 @@ methods and injecting relations into the returned results. Because this happens 
 level, related items can be loaded ahead of time in batches ("eager loading").
 
 Add the trait to your models:
-
+```php
 	use \Tatter\Relations\Traits\ModelTrait
+```
 
 Related items can be requested by adding a `$with` property to your model:
-
-```
+```php
 	protected $with = 'groups';
 	// or
 	protected $with = ['groups', 'permissions'];
@@ -63,8 +66,7 @@ Related items can be requested by adding a `$with` property to your model:
 
 ... or by requesting it on-the-fly using the model `with()` method:
 
-
-```
+```php
 $users = $userModel->with('groups')->findAll();
 foreach ($users as $userEntity)
 {
@@ -82,8 +84,7 @@ and `__call()` methods to check for matching database tables. Because this happe
 item, related items can be retrieved or updated on-the-fly ("lazy loading").
 
 Add the trait and its necessary properties to your entities:
-
-```
+```php
 	use \Tatter\Relations\Traits\EntityTrait
 	
 	protected $table      = 'users';
@@ -91,8 +92,7 @@ Add the trait and its necessary properties to your entities:
 ```
 
 Related items are available as faux properties:
-
-```
+```php
 	$user = $userModel->find(1);
 	
 	foreach ($user->groups as $group)
@@ -102,8 +102,7 @@ Related items are available as faux properties:
 ```
 
 ... and can also be updated directly from the entity:
-
-```
+```php
 	$user->addGroup(3);
 	
 	if ($user->hasGroups([1, 3]))
@@ -123,7 +122,7 @@ for "manyToMany" relationships.
 successful, **Relations** will use each table's model to find the related items. This keeps
 consistent the return types, events, and other aspects of your models. In addition to the
 return type, **Relations** will also adjust related items for singleton relationships:
-```
+```php
 // User hasMany Widgets
 $user = $userModel->with('widgets')->find($userId);
 echo "User {$user->name} has " . count($user->widgets) . " widgets.";
@@ -138,7 +137,7 @@ echo $widget->name . " belongs to " . $widget->user->name;
 **ModelTrait** supports nested relation calls, but these can be resource intensive so may
 be disabled by changing `$allowNesting` in the config. With nesting enabled, any related
 items will also load their related items (but not infinitely):
-```
+```php
 /* Define your models */
 class UserModel
 {
@@ -178,7 +177,7 @@ request initiates the load. The schema will attempt to cache to prevent this del
 if your cache is not configured correctly you will likely experience noticeable performance
 degradation. The recommended approach is to have a cron job generate your schema regularly
 so it never expires and no user will trigger the un-cached load, e.g.:
-```
+```shell
 php spark schemas
 ```
 
