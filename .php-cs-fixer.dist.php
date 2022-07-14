@@ -13,7 +13,10 @@ $finder = Finder::create()
     ->exclude('build')
     ->append([__FILE__]);
 
-$overrides = [];
+$overrides = [
+    // Many tests need to be rewritten to support assertSame instead of assertEquals
+    'php_unit_strict' => false,
+];
 
 $options = [
     'finder'    => $finder,

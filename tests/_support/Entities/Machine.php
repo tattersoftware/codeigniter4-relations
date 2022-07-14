@@ -1,15 +1,15 @@
-<?php namespace Tests\Support\Entities;
+<?php
 
-use Tatter\Relations\Traits\EntityTrait;
+namespace Tests\Support\Entities;
+
 use CodeIgniter\Entity\Entity;
+use Tatter\Relations\Traits\EntityTrait;
 
 class Machine extends Entity
 {
-	use EntityTrait;
+    use EntityTrait;
 
-	protected $table = 'machines';
-
-	protected $primaryKey = 'id';
-	
-	protected $dates = ['created_at', 'updated_at'];
+    protected $table      = 'machines';
+    protected $primaryKey = 'id';
+    protected $dates      = ['created_at', 'updated_at'];
 }
