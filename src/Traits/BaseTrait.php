@@ -1,10 +1,10 @@
 <?php namespace Tatter\Relations\Traits;
 
-use Config\Services;
 use Tatter\Relations\Exceptions\RelationsException;
 use Tatter\Relations\Interfaces\RelatableInterface;
 use Tatter\Schemas\Structures\Relation;
 use Tatter\Schemas\Structures\Schema;
+use Tatter\Schemas\Structures\Table;
 
 trait BaseTrait
 {
@@ -62,6 +62,7 @@ trait BaseTrait
 		$this->_verifyRelatable();
 
 		// Fetch the target table
+		/** @var Table $table */
 		$table = $this->_schema()->tables->{$tableName};
 
 		// Get the relationship
@@ -215,7 +216,7 @@ trait BaseTrait
 		$this->_verifyRelatable();
 
 		// Load the Schemas service
-		$schemas = Services::schemas();
+		$schemas = service('schemas');
 
 		if (empty($schemas))
 		{

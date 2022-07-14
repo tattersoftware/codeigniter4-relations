@@ -102,6 +102,7 @@ class RelationsTest extends DatabaseTestCase
 		
 		$workers = $this->factory->relations('workers');
 		
+		/** @var Factory $factory */
 		$this->assertEquals($factory->workers, $workers);
 	}
 }

@@ -146,7 +146,7 @@ trait EntityTrait
 	 * Note that __get() has already checked $this->attributes for $tableName
 	 *
 	 * @param string $tableName  The name of the table to check for relations
-	 * @param string $keysOnly   Whether to return the entire rows or just primary keys
+	 * @param bool $keysOnly   Whether to return the entire rows or just primary keys
 	 *
 	 * @return mixed  Function return is determined by the relation type and keysOnly:
 	 *                              array of items or keys (hasMany, manyToMany)
@@ -216,10 +216,10 @@ trait EntityTrait
 			return false;
 		}
 
-		// If no keys were requested then simple check for at least one entity
+		// If no keys were requested then we already have at least one entity
 		if (empty($keys))
 		{
-			return ! empty($items);
+			return true;
 		}
 			
 		// Otherwise count how many of the requested keys are matched
@@ -288,7 +288,6 @@ trait EntityTrait
 
 				// Add back any specified keys
 				return $this->_add($tableName, $keys);
-			break;
 			
 			default:
 				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
@@ -350,7 +349,6 @@ trait EntityTrait
 				$builder->insertBatch($rows);
 				
 				return true;
-			break;
 			
 			default:
 				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));
@@ -405,7 +403,6 @@ trait EntityTrait
 				unset($this->attributes[$tableName]);
 				
 				return true;
-			break;
 			
 			default:
 				throw new \RuntimeException(lang('Relations.invalidOperation', ['setRelations', $relation->type]));

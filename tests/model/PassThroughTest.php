@@ -6,6 +6,9 @@ use Tests\Support\Models\NormalModel;
 
 class PassThroughTest extends DatabaseTestCase
 {
+    private FactoryModel $extended;
+    private NormalModel $normal;
+
 	public function setUp(): void
 	{
 		parent::setUp();

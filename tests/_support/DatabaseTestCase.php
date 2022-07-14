@@ -1,11 +1,13 @@
 <?php namespace Tests\Support;
 
 use CodeIgniter\Config\Services;
-use CodeIgniter\Test\CIDatabaseTestCase;
+use CodeIgniter\Test\DatabaseTestTrait;
 use Tatter\Schemas\Drafter\Handlers\DatabaseHandler;
 
-class DatabaseTestCase extends CIDatabaseTestCase
+class DatabaseTestCase extends UnitTestCase
 {
+    use DatabaseTestTrait;
+
 	/**
 	 * Should the database be refreshed before each test?
 	 *
@@ -39,13 +41,5 @@ class DatabaseTestCase extends CIDatabaseTestCase
 		parent::setUp();
 
 		cache()->clean();
-
-		// Configure and inject the Schemas service
-		$config         = new \Tatter\Schemas\Config\Schemas();
-		$config->silent = false;
-		$config->ignoredNamespaces = [];
-		
-		$schemas = new \Tatter\Schemas\Schemas($config);
-        Services::injectMock('schemas', $schemas);
 	}
 }

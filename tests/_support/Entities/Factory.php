@@ -1,6 +1,6 @@
 <?php namespace Tests\Support\Entities;
 
-use CodeIgniter\Entity;
+use CodeIgniter\Entity\Entity;
 
 class Factory extends Entity
 {

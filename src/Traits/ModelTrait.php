@@ -54,12 +54,13 @@ trait ModelTrait
 	 * Blocks specified tables from being loaded as relations with the next finder.
 	 * Used mostly to prevent nesting loops.
 	 *
-	 * @param mixed   $without    Table name or array of table names
+	 * @param string|string[] $tables    Table name or array of table names
 	 *
 	 * @return $this
 	 */
 	public function without($tables)
 	{
+	    // @phpstan-ignore-next-line
 		if (! is_string($tables) && ! is_array($tables))
 		{
 			throw new \RuntimeException(lang('Relations.invalidWithout'));

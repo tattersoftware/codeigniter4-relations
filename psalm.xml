@@ -13,7 +13,6 @@
         <directory name="tests/" />
         <ignoreFiles>
             <directory name="vendor" />
-            <directory name="src/Views" />
         </ignoreFiles>
     </projectFiles>
 </psalm>

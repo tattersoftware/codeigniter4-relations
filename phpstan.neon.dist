@@ -10,10 +10,14 @@ parameters:
 		- src/Config/Routes.php
 		- src/Views/*
 	ignoreErrors:
+		- '#Access to an undefined property Tests\\Support\\Models.+#'
+		- '#Call to an undefined method object::(reindex|with|without)\(\)#'
+		- '#Unsafe usage of new static\(\)#'
 	universalObjectCratesClasses:
 		- CodeIgniter\Entity
 		- CodeIgniter\Entity\Entity
 		- Faker\Generator
+		- Tatter\Schemas\Structures\Mergeable
 	scanDirectories:
 		- vendor/codeigniter4/framework/system/Helpers
 	dynamicConstantNames:

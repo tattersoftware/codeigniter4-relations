@@ -5,7 +5,6 @@ declare(strict_types=1);
 require __DIR__ . '/vendor/codeigniter4/framework/system/Test/bootstrap.php';
 
 $helperDirs = [
-    'src/Helpers',
     'vendor/codeigniter4/framework/system/Helpers',
 ];
 
