@@ -162,6 +162,14 @@ foreach ($groups as $group)
 }
 ```
 
+### Soft Deletes
+
+If your target relations correspond to a CodeIgniter Model that uses [soft deletion](https://codeigniter.com/user_guide/models/model.html#usesoftdeletes)
+then you may include the table name in the `array $withDeletedRelations` property to include
+soft deleted items. This is particularly helpful for tight relationships, like when an item
+`belongsTo` another item that has been soft deleted. `$withDeletedRelations` works on both
+Entities and Models.
+
 ## Performance
 
 *WARNING*: Be aware that **Relations** relies on a schema generated from the **Schemas**
