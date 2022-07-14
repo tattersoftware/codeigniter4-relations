@@ -1,51 +1,48 @@
-<?php namespace Tests\Support;
+<?php
 
-use CodeIgniter\Config\Services;
-use CodeIgniter\Test\CIDatabaseTestCase;
-use Tatter\Schemas\Drafter\Handlers\DatabaseHandler;
+namespace Tests\Support;
 
-class DatabaseTestCase extends CIDatabaseTestCase
+use CodeIgniter\Test\DatabaseTestTrait;
+
+/**
+ * @internal
+ */
+abstract class DatabaseTestCase extends UnitTestCase
 {
-	/**
-	 * Should the database be refreshed before each test?
-	 *
-	 * @var boolean
-	 */
-	protected $refresh = true;
+    use DatabaseTestTrait;
 
-	/**
-	 * The name of a seed file used for all tests within this test case.
-	 *
-	 * @var string
-	 */
-	protected $seed = 'Tests\Support\Database\Seeds\TestSeeder';
+    /**
+     * Should the database be refreshed before each test?
+     *
+     * @var bool
+     */
+    protected $refresh = true;
 
-	/**
-	 * The path to where we can find the test Seeds directory.
-	 *
-	 * @var string
-	 */
-	protected $basePath = SUPPORTPATH . 'Database/';
+    /**
+     * The name of a seed file used for all tests within this test case.
+     *
+     * @var string
+     */
+    protected $seed = 'Tests\Support\Database\Seeds\TestSeeder';
 
-	/**
-	 * The namespace to help us find the migration classes.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'Tests\Support';
+    /**
+     * The path to where we can find the test Seeds directory.
+     *
+     * @var string
+     */
+    protected $basePath = SUPPORTPATH . 'Database/';
 
-	public function setUp(): void
-	{
-		parent::setUp();
+    /**
+     * The namespace to help us find the migration classes.
+     *
+     * @var string
+     */
+    protected $namespace = 'Tests\Support';
 
-		cache()->clean();
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-		// Configure and inject the Schemas service
-		$config         = new \Tatter\Schemas\Config\Schemas();
-		$config->silent = false;
-		$config->ignoredNamespaces = [];
-		
-		$schemas = new \Tatter\Schemas\Schemas($config);
-        Services::injectMock('schemas', $schemas);
-	}
+        cache()->clean();
+    }
 }

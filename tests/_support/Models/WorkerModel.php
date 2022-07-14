@@ -1,22 +1,21 @@
-<?php namespace Tests\Support\Models;
+<?php
+
+namespace Tests\Support\Models;
 
 use CodeIgniter\Model;
+use Tatter\Relations\Traits\ModelTrait;
 
 class WorkerModel extends Model
 {
-	use \Tatter\Relations\Traits\ModelTrait;
-	 
-	protected $table      = 'workers';
-	protected $primaryKey = 'id';
+    use ModelTrait;
 
-	protected $returnType = 'object';
-	protected $useSoftDeletes = true;
-
-	protected $allowedFields = ['firstname', 'lastname', 'role', 'age'];
-
-	protected $useTimestamps = true;
-
-	protected $validationRules    = [];
-	protected $validationMessages = [];
-	protected $skipValidation     = false;
+    protected $table              = 'workers';
+    protected $primaryKey         = 'id';
+    protected $returnType         = 'object';
+    protected $useSoftDeletes     = true;
+    protected $allowedFields      = ['firstname', 'lastname', 'role', 'age'];
+    protected $useTimestamps      = true;
+    protected $validationRules    = [];
+    protected $validationMessages = [];
+    protected $skipValidation     = false;
 }

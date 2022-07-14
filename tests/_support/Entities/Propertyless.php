@@ -1,10 +1,13 @@
-<?php namespace Tests\Support\Entities;
+<?php
 
-use CodeIgniter\Entity;
+namespace Tests\Support\Entities;
+
+use CodeIgniter\Entity\Entity;
+use Tatter\Relations\Traits\EntityTrait;
 
 class Propertyless extends Entity
 {
-	use \Tatter\Relations\Traits\EntityTrait;
-	
-	protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+    use EntityTrait;
+
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 }

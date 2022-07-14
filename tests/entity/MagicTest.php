@@ -1,149 +1,156 @@
-<?php namespace Tests\Support\Models;
+<?php
 
+namespace Tests\Support\Models;
+
+use ArgumentCountError;
+use BadMethodCallException;
+use Tatter\Relations\Exceptions\RelationsException;
 use Tests\Support\DatabaseTestCase;
 use Tests\Support\Entities\Factory;
 use Tests\Support\Entities\Machine;
 use Tests\Support\Entities\Propertyless;
-use Tatter\Relations\Exceptions\RelationsException;
 
-class MagicTest extends DatabaseTestCase
+/**
+ * @internal
+ */
+final class MagicTest extends DatabaseTestCase
 {
-	public function setUp(): void
-	{
-		parent::setUp();
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-		$this->row     = $this->db->table('factories')->where('id', 1)->get()->getRowArray();
-		$this->factory = new Factory($this->row);
-		
-		$this->machines = new MachineModel();
-		$this->machine  = new Machine((array) $this->machines->with(false)->find(7));
-	}
+        $this->row     = $this->db->table('factories')->where('id', 1)->get()->getRowArray();
+        $this->factory = new Factory($this->row);
 
-	public function testGetIgnoresUnmatched()
-	{
+        $this->machines = new MachineModel();
+        $this->machine  = new Machine((array) $this->machines->with(false)->find(7));
+    }
+
+    public function testGetIgnoresUnmatched()
+    {
         $this->assertNull($this->factory->racecars);
-	}
+    }
 
-	public function testGetRespectsNull()
-	{
-		$machine = new Machine([
-			'factory_id' => 1,
-			'factory' => null,
-		]);
+    public function testGetRespectsNull()
+    {
+        $machine = new Machine([
+            'factory_id' => 1,
+            'factory'    => null,
+        ]);
 
-		$result = $machine->factory;
+        $result = $machine->factory;
 
         $this->assertNull($result);
-	}
-	
-	public function testRequiresProperties()
-	{
-		$this->expectException(RelationsException::class);
-		$this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
-		
-		$factory = (new Propertyless($this->row))->_getRelationship('foobar');
-	}
+    }
 
-	public function testGetSuccess()
-	{
-		$workers = $this->factory->workers;
+    public function testRequiresProperties()
+    {
+        $this->expectException(RelationsException::class);
+        $this->expectExceptionMessage('Class Tests\Support\Entities\Propertyless must have the table property to use relations');
 
-		$this->assertCount(4, $workers);
-		$this->assertEquals('Delgado', $workers[3]->lastname);
-	}
+        (new Propertyless($this->row))->_getRelationship('foobar');
+    }
 
-	public function testGetSingleton()
-	{
-		$factory = $this->machine->factory;
+    public function testGetSuccess()
+    {
+        $workers = $this->factory->workers;
 
-		$this->assertEquals('evil-maker', $factory->uid);
-	}
+        $this->assertCount(4, $workers);
+        $this->assertEquals('Delgado', $workers[3]->lastname);
+    }
 
-	public function testCallUnmatchedFails()
-	{
-		$this->expectException(\BadMethodCallException::class);
-		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::doesJingle does not exist.');
-		
-		$this->factory->doesJingle();
-	}
+    public function testGetSingleton()
+    {
+        $factory = $this->machine->factory;
 
-	public function testCallCaseFails()
-	{
-		$this->expectException(\BadMethodCallException::class);
-		$this->expectExceptionMessage('Method Tests\Support\Entities\Factory::hasworkers does not exist.');
-		
-		$this->factory->hasworkers();
-	}
+        $this->assertEquals('evil-maker', $factory->uid);
+    }
 
-	public function testCallTooManyArgsFails()
-	{
-		$this->expectException(\ArgumentCountError::class);
-		$this->expectExceptionMessage('Too many arguments to function Tests\Support\Entities\Factory::hasWorkers, 4 passed and at most 1 expected.');
-		
-		$this->factory->hasWorkers([1], 2, 3, 4);
-	}
+    public function testCallUnmatchedFails()
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Method Tests\Support\Entities\Factory::doesJingle does not exist.');
 
-	public function testCallHasSuccess()
-	{
-		$this->assertTrue($this->factory->hasWorkers([2, 4]));
-	}
+        $this->factory->doesJingle();
+    }
 
-	public function testCallSingleton()
-	{
-		$this->assertTrue($this->factory->hasWorkers(1));
-	}
+    public function testCallCaseFails()
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Method Tests\Support\Entities\Factory::hasworkers does not exist.');
 
-	public function testCallSingular()
-	{
-		$this->assertTrue($this->factory->hasWorker(1));
-	}
+        $this->factory->hasworkers();
+    }
 
-	public function testCallIgnoresDupes()
-	{
-		$this->assertTrue($this->factory->hasWorkers([2, 2, 2, 2]));		
-	}
+    public function testCallTooManyArgsFails()
+    {
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessage('Too many arguments to function Tests\Support\Entities\Factory::hasWorkers, 4 passed and at most 1 expected.');
 
-	public function testAddSuccess()
-	{
-		$result = $this->factory->addWorker(9);
-		
-		$this->assertTrue($result);
-		
-		$builder = $this->db->table('factories_workers');
+        $this->factory->hasWorkers([1], 2, 3, 4);
+    }
 
-		$this->assertEquals(5, $builder->where('factory_id', 1)->countAllResults());
-	}
+    public function testCallHasSuccess()
+    {
+        $this->assertTrue($this->factory->hasWorkers([2, 4]));
+    }
 
-	public function testRemove()
-	{
-		$result = $this->factory->removeWorker([2, 3]);
-		
-		$this->assertTrue($result);
-		
-		$builder = $this->db->table('factories_workers');
+    public function testCallSingleton()
+    {
+        $this->assertTrue($this->factory->hasWorkers(1));
+    }
 
-		$this->assertEquals(2, $builder->where('factory_id', 1)->countAllResults());
-	}
+    public function testCallSingular()
+    {
+        $this->assertTrue($this->factory->hasWorker(1));
+    }
 
-	public function testSet()
-	{
-		$result = $this->factory->setWorkers(1);
-		
-		$this->assertTrue($result);
-		
-		$builder = $this->db->table('factories_workers');
+    public function testCallIgnoresDupes()
+    {
+        $this->assertTrue($this->factory->hasWorkers([2, 2, 2, 2]));
+    }
 
-		$this->assertEquals(1, $builder->where('factory_id', 1)->countAllResults());
-	}
+    public function testAddSuccess()
+    {
+        $result = $this->factory->addWorker(9);
 
-	public function testSetEmpty()
-	{
-		$result = $this->factory->setWorkers([]);
-		
-		$this->assertTrue($result);
-		
-		$builder = $this->db->table('factories_workers');
+        $this->assertTrue($result);
 
-		$this->assertEquals(0, $builder->where('factory_id', 1)->countAllResults());
-	}
+        $builder = $this->db->table('factories_workers');
+
+        $this->assertEquals(5, $builder->where('factory_id', 1)->countAllResults());
+    }
+
+    public function testRemove()
+    {
+        $result = $this->factory->removeWorker([2, 3]);
+
+        $this->assertTrue($result);
+
+        $builder = $this->db->table('factories_workers');
+
+        $this->assertEquals(2, $builder->where('factory_id', 1)->countAllResults());
+    }
+
+    public function testSet()
+    {
+        $result = $this->factory->setWorkers(1);
+
+        $this->assertTrue($result);
+
+        $builder = $this->db->table('factories_workers');
+
+        $this->assertEquals(1, $builder->where('factory_id', 1)->countAllResults());
+    }
+
+    public function testSetEmpty()
+    {
+        $result = $this->factory->setWorkers([]);
+
+        $this->assertTrue($result);
+
+        $builder = $this->db->table('factories_workers');
+
+        $this->assertEquals(0, $builder->where('factory_id', 1)->countAllResults());
+    }
 }
