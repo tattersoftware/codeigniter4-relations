@@ -11,6 +11,25 @@ use Tatter\Schemas\Structures\Table;
 trait BaseTrait
 {
     /**
+	 * Uses loaded schema if exists
+	 *
+	 * @var string
+	 */
+	protected $schema = null;
+
+    /**
+     * Load the schema manually
+     *
+     * @param Schema $schema
+     */
+    public function setSchema(Schema $schema)
+    {
+        $this->schema = $schema;
+
+        return $this;
+    }
+
+    /**
      * Uses the schema to determine this class's relationship to a table
      *
      * @param string $tableName Name of the target table
@@ -200,6 +219,11 @@ trait BaseTrait
 
         if (empty($schemas)) {
             throw new RuntimeException(lang('Relations.noSchemas'));
+        }
+
+        // Check if schema is loaded manually
+        if ($this->schema) {
+            return $this->schema;
         }
 
         // Check for a schema using the defaults
