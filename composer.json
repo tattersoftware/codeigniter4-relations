@@ -1,5 +1,5 @@
 {
-    "name": "tatter/relations",
+    "name": "daycry/relations",
     "description": "Entity relationships for CodeIgniter 4",
     "license": "MIT",
     "type": "library",
