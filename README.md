@@ -161,6 +161,37 @@ foreach ($groups as $group)
 }
 ```
 
+### Load Schema Manually
+
+**BaseTrait** supports to load a schema manually:
+
+```php
+/* Define your models */
+class UserModel
+{
+	use \Tatter\Relations\Traits\ModelTrait;
+
+	protected $table = 'users';
+	protected $with  = 'widgets';
+...
+	
+/* Then in your controller */
+$configSchema = config('Schemas');
+$handler = new DatabaseHandler($configSchema, config('RestServer')->restDatabaseGroup);
+$schema = $handler->draft();
+$groups = $groupModel->setSchema($schema)->whereIn('id', $groupIds)->with('users')->findAll();
+
+foreach ($groups as $group)
+{
+	echo "<h1>{$group->name}</h1>";
+	
+	foreach ($group->users as $user)
+	{
+		echo "{$user->name} is a {$user->role} with " . count($user->widgets) . " widgets.";
+	}
+}
+```
+
 ### Soft Deletes
 
 If your target relations correspond to a CodeIgniter Model that uses [soft deletion](https://codeigniter.com/user_guide/models/model.html#usesoftdeletes)
