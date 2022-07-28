@@ -8,7 +8,7 @@ Entity relationships for CodeIgniter 4
 
 ## Quick Start
 
-1. Install with Composer: `> composer require tatter/relations`
+1. Install with Composer: `> composer require daycry/relations`
 2. Add the trait to your model: `use \Tatter\Relations\Traits\ModelTrait`
 3. Load relations: `$users = $userModel->with('groups')->findAll();`
 4. Add the trait to your entity: `use \Tatter\Relations\Traits\EntityTrait`
@@ -21,7 +21,7 @@ Entity relationships for CodeIgniter 4
 Install easily via Composer to take advantage of CodeIgniter 4's autoloading capabilities
 and always be up-to-date:
 ```shell
-    > composer require tatter/relations
+    > composer require daycry/relations
 ```
 
 Or, install manually by downloading the source files and adding the directory to
