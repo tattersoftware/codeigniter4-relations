@@ -116,7 +116,7 @@ trait BaseTrait
 
         // No model - use a generic builder
         else {
-            $builder    = isset($this->db) ? $this->db->table($table->name) : db_connect()->table($table->name);
+            $builder    = isset($this->db) ? $this->db->table($table->name) : db_connect($this->DBGroup)->table($table->name);
             $returnType = $config->defaultReturnType;
         }
 

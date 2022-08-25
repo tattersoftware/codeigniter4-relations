@@ -253,7 +253,7 @@ trait EntityTrait
                 $pivotTable = $relation->pivots[0][2];
                 $pivotId    = $relation->pivots[0][3];
 
-                $builder = db_connect()->table($pivotTable);
+                $builder = db_connect($this->DBGroup)->table($pivotTable);
 
                 // Clear existing relations
                 $builder->where($pivotId, $this->attributes[$this->primaryKey])->delete();
@@ -309,7 +309,7 @@ trait EntityTrait
                 $pivotId    = $relation->pivots[0][3];
                 $targetId   = $relation->pivots[1][1];
 
-                $builder = db_connect()->table($pivotTable);
+                $builder = db_connect($this->DBGroup)->table($pivotTable);
 
                 // Remove from the entity so if they are requested they must reload
                 unset($this->attributes[$tableName]);
@@ -369,7 +369,7 @@ trait EntityTrait
                 $targetId   = $relation->pivots[1][1];
 
                 // Remove the relations
-                $builder = db_connect()->table($pivotTable);
+                $builder = db_connect($this->DBGroup)->table($pivotTable);
                 $builder
                     ->where($pivotId, $this->attributes[$this->primaryKey])
                     ->whereIn($targetId, $keys)
