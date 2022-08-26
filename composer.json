@@ -32,7 +32,7 @@
         "tatter/schemas": "^2.0"
     },
     "require-dev": {
-        "codeigniter4/framework": "^4.1",
+        "codeigniter4/framework": "^4",
         "tatter/tools": "^2.0"
     },
     "minimum-stability": "dev",
