@@ -243,9 +243,7 @@ trait EntityTrait
         switch ($relation->type) {
             // WIP - need to decide about adding and detaching
             case 'hasMany':
-
                 break;
-
                 // Delete entries from the pivot table
             case 'manyToMany':
 
