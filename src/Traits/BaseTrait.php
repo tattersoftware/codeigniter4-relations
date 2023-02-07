@@ -11,16 +11,14 @@ use Tatter\Schemas\Structures\Table;
 trait BaseTrait
 {
     /**
-	 * Uses loaded schema if exists
-	 *
-	 * @var string
-	 */
-	protected $schema = null;
+     * Uses loaded schema if exists
+     *
+     * @var string
+     */
+    protected $schema;
 
     /**
      * Load the schema manually
-     *
-     * @param Schema $schema
      */
     public function setSchema(Schema $schema)
     {
@@ -117,8 +115,8 @@ trait BaseTrait
         // No model - use a generic builder
         else {
             $this->DBGroup = (isset($this->DBGroup)) ? $this->DBGroup : null;
-            $builder    = isset($this->db) ? $this->db->table($table->name) : db_connect($this->DBGroup)->table($table->name);
-            $returnType = $config->defaultReturnType;
+            $builder       = isset($this->db) ? $this->db->table($table->name) : db_connect($this->DBGroup)->table($table->name);
+            $returnType    = $config->defaultReturnType;
         }
 
         // Define the returns
@@ -265,9 +263,9 @@ trait BaseTrait
     private function _getPivotRelation(array $pivot)
     {
         $data = [];
-        foreach( $pivot as $p )
-        {
-            $el = ( is_array( $p ) ) ? $p[0] : $p;
+
+        foreach ($pivot as $p) {
+            $el     = (is_array($p)) ? $p[0] : $p;
             $data[] = $el;
         }
 

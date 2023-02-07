@@ -72,8 +72,8 @@ final class MethodsTest extends DatabaseTestCase
         $factory   = $this->factories->with(false)->find(1);
 
         $this->assertEquals($factory, $factories[1]->machines[1]->factory);
-        $this->assertTrue( isset($factories[1]->machines[1]->factory) );
-        //$this->assertObjectNotHasAttribute('machines', $factories[1]->machines[1]->factory);
+        $this->assertTrue(isset($factories[1]->machines[1]->factory));
+        // $this->assertObjectNotHasAttribute('machines', $factories[1]->machines[1]->factory);
     }
 
     public function testBelongsToNested()

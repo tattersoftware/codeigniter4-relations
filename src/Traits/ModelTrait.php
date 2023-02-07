@@ -143,9 +143,9 @@ trait ModelTrait
         return $this;
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
     // FINDERS EXTENSIONS
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
     /**
      * Fetches the row of database from $this->table with a primary key
@@ -170,7 +170,7 @@ trait ModelTrait
         return $this->addRelations($data);
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
     /**
      * Works with the current Query Builder instance to return
      * all results, while optionally limiting them.
@@ -184,7 +184,7 @@ trait ModelTrait
         return $this->addRelations($data);
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
     /**
      * Returns the first row of the result set. Will take any previous
