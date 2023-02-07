@@ -129,7 +129,7 @@ trait BaseTrait
             // hasMany is the easiest because it doesn't need joins
             case 'hasMany':
                 // Grab the first (should be only) pivot: [$table->name, $table->primaryKey, $this->table, foreignKey]
-                $pivot       = reset($relation->pivots);
+                $pivot       = $this->_getPivotRelation(reset($relation->pivots));
                 $originating = "{$pivot[2]}.{$pivot[3]}";
                 break;
 
@@ -140,7 +140,7 @@ trait BaseTrait
                 $originating = "{$this->table}.{$this->primaryKey}";
 
                 // Grab the first (should be only) pivot: [$this->table, foreignKey, $table->name, $table->primaryKey]
-                $pivot = reset($relation->pivots);
+                $pivot = $this->_getPivotRelation(reset($relation->pivots));
 
                 // Join this model's table (for ID filtering)
                 $builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
@@ -149,7 +149,7 @@ trait BaseTrait
                 // manyToMany and manyThrough navigate the pivots stopping at the join table
             default:
                 // Determine originating from the first pivot
-                $pivot       = reset($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
+                $pivot       = $this->_getPivotRelation(reset($relation->pivots)); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
                 $originating = "{$pivot[2]}.{$pivot[3]}";
 
                 // Navigate the remaining pivots to generate join statements
@@ -260,5 +260,17 @@ trait BaseTrait
         if (! function_exists('plural')) {
             helper('inflector');
         }
+    }
+
+    private function _getPivotRelation(array $pivot)
+    {
+        $data = [];
+        foreach( $pivot as $p )
+        {
+            $el = ( is_array( $p ) ) ? $p[0] : $p;
+            $data[] = $el;
+        }
+
+        return $data;
     }
 }
