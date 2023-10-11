@@ -11,6 +11,23 @@ use Tatter\Schemas\Structures\Table;
 trait BaseTrait
 {
     /**
+     * Uses loaded schema if exists
+     *
+     * @var string
+     */
+    protected $schema;
+
+    /**
+     * Load the schema manually
+     */
+    public function setSchema(Schema $schema)
+    {
+        $this->schema = $schema;
+
+        return $this;
+    }
+
+    /**
      * Uses the schema to determine this class's relationship to a table
      *
      * @param string $tableName Name of the target table
@@ -97,8 +114,9 @@ trait BaseTrait
 
         // No model - use a generic builder
         else {
-            $builder    = isset($this->db) ? $this->db->table($table->name) : db_connect()->table($table->name);
-            $returnType = $config->defaultReturnType;
+            $this->DBGroup = (isset($this->DBGroup)) ? $this->DBGroup : null;
+            $builder       = isset($this->db) ? $this->db->table($table->name) : db_connect($this->DBGroup)->table($table->name);
+            $returnType    = $config->defaultReturnType;
         }
 
         // Define the returns
@@ -109,7 +127,7 @@ trait BaseTrait
             // hasMany is the easiest because it doesn't need joins
             case 'hasMany':
                 // Grab the first (should be only) pivot: [$table->name, $table->primaryKey, $this->table, foreignKey]
-                $pivot       = reset($relation->pivots);
+                $pivot       = $this->_getPivotRelation(reset($relation->pivots));
                 $originating = "{$pivot[2]}.{$pivot[3]}";
                 break;
 
@@ -120,7 +138,7 @@ trait BaseTrait
                 $originating = "{$this->table}.{$this->primaryKey}";
 
                 // Grab the first (should be only) pivot: [$this->table, foreignKey, $table->name, $table->primaryKey]
-                $pivot = reset($relation->pivots);
+                $pivot = $this->_getPivotRelation(reset($relation->pivots));
 
                 // Join this model's table (for ID filtering)
                 $builder->join($pivot[0], "{$pivot[0]}.{$pivot[1]} = {$pivot[2]}.{$pivot[3]}");
@@ -129,7 +147,7 @@ trait BaseTrait
                 // manyToMany and manyThrough navigate the pivots stopping at the join table
             default:
                 // Determine originating from the first pivot
-                $pivot       = reset($relation->pivots); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
+                $pivot       = $this->_getPivotRelation(reset($relation->pivots)); // [$this->table, $this->primaryKey, pivotTable, foreignKey]
                 $originating = "{$pivot[2]}.{$pivot[3]}";
 
                 // Navigate the remaining pivots to generate join statements
@@ -202,6 +220,11 @@ trait BaseTrait
             throw new RuntimeException(lang('Relations.noSchemas'));
         }
 
+        // Check if schema is loaded manually
+        if ($this->schema) {
+            return $this->schema;
+        }
+
         // Check for a schema using the defaults
         $schema = $schemas->get();
 
@@ -235,5 +258,17 @@ trait BaseTrait
         if (! function_exists('plural')) {
             helper('inflector');
         }
+    }
+
+    private function _getPivotRelation(array $pivot)
+    {
+        $data = [];
+
+        foreach ($pivot as $p) {
+            $el     = (is_array($p)) ? $p[0] : $p;
+            $data[] = $el;
+        }
+
+        return $data;
     }
 }

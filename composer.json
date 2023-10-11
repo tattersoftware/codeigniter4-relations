@@ -1,5 +1,5 @@
 {
-    "name": "tatter/relations",
+    "name": "daycry/relations",
     "description": "Entity relationships for CodeIgniter 4",
     "license": "MIT",
     "type": "library",
@@ -18,15 +18,21 @@
             "email": "mgatner@tattersoftware.com",
             "homepage": "https://tattersoftware.com",
             "role": "Developer"
+        },
+        {
+            "name": "Daycry",
+            "email": "daycry9@gmail.com",
+            "homepage": "https://daycryweb.blogspot.com/",
+            "role": "Developer"
         }
     ],
-    "homepage": "https://github.com/tattersoftware/codeigniter4-relations",
+    "homepage": "https://github.com/daycry/codeigniter4-relations",
     "require": {
         "php": "^7.4 || ^8.0",
         "tatter/schemas": "^2.0"
     },
     "require-dev": {
-        "codeigniter4/framework": "^4.1",
+        "codeigniter4/framework": "^4",
         "tatter/tools": "^2.0"
     },
     "minimum-stability": "dev",
