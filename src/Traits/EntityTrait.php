@@ -107,8 +107,7 @@ trait EntityTrait
         }
 
         // Format target as a valid table reference
-        // WIP - needs to handle underscores, maybe others?
-        $target = lcfirst(plural($target));
+        $target = strtolower(preg_replace('/(?<!^)[A-Z]+/', '_$0', plural($target)));
 
         // Flatten the arguments to just the keys
         $keys = reset($arguments);
