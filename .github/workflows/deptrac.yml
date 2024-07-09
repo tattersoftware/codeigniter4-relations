@@ -31,7 +31,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.2'
           tools: phive
           extensions: intl, json, mbstring, xml
           coverage: none
@@ -69,5 +69,7 @@ jobs:
 
       - name: Trace dependencies
         run: |
-          sudo phive --no-progress install --global --trust-gpg-keys B8F640134AB1782E,A98E898BB53EB748 qossmic/deptrac
-          deptrac analyze --cache-file=build/deptrac.cache
+          composer require --dev qossmic/deptrac-shim
+          vendor/bin/deptrac analyze --cache-file=build/deptrac.cache
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}

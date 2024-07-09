@@ -117,7 +117,7 @@ final class RelationsTest extends DatabaseTestCase
         $machine1 = new Machine((array) $object);
         $this->assertNull($machine1->factory);
 
-        $machine2                                 = new class () extends Machine {
+        $machine2 = new class () extends Machine {
             protected array $withDeletedRelations = ['factories'];
         };
         $machine2->fill((array) $object);

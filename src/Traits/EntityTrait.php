@@ -59,6 +59,7 @@ trait EntityTrait
 
         // Convert the key to table format
         $tableName = plural(strtolower($key));
+
         // Check for a matching table
         return isset($schema->tables->{$tableName});
     }
@@ -81,7 +82,7 @@ trait EntityTrait
         $verb = false;
 
         foreach ($verbs as $test) {
-            if (strpos($name, $test) === 0) {
+            if (str_starts_with($name, $test)) {
                 $verb = $test;
                 break;
             }
@@ -242,12 +243,10 @@ trait EntityTrait
         switch ($relation->type) {
             // WIP - need to decide about adding and detaching
             case 'hasMany':
-
                 break;
 
                 // Delete entries from the pivot table
             case 'manyToMany':
-
                 // Get the pivot table info
                 $pivotTable = $relation->pivots[0][2];
                 $pivotId    = $relation->pivots[0][3];
@@ -297,12 +296,10 @@ trait EntityTrait
         switch ($relation->type) {
             // WIP - need to decide about attaching versus adding
             case 'hasMany':
-
                 break;
 
                 // Add entries to the pivot table
             case 'manyToMany':
-
                 // Get the pivot table info
                 $pivotTable = $relation->pivots[0][2];
                 $pivotId    = $relation->pivots[0][3];
@@ -356,12 +353,10 @@ trait EntityTrait
         switch ($relation->type) {
             // WIP - need to decide about detaching versus deleting
             case 'hasMany':
-
                 break;
 
                 // Delete entries from the pivot table
             case 'manyToMany':
-
                 // Get the pivot table info
                 $pivotTable = $relation->pivots[0][2];
                 $pivotId    = $relation->pivots[0][3];
