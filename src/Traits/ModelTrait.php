@@ -48,7 +48,7 @@ trait ModelTrait
      * Blocks specified tables from being loaded as relations with the next finder.
      * Used mostly to prevent nesting loops.
      *
-     * @param string|string[] $tables Table name or array of table names
+     * @param list<string>|string $tables Table name or array of table names
      *
      * @return $this
      */
@@ -143,9 +143,9 @@ trait ModelTrait
         return $this;
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
     // FINDERS EXTENSIONS
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
     /**
      * Fetches the row of database from $this->table with a primary key
@@ -170,21 +170,21 @@ trait ModelTrait
         return $this->addRelations($data);
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
     /**
      * Works with the current Query Builder instance to return
      * all results, while optionally limiting them.
      *
      * @return array|null
      */
-    public function findAll(int $limit = null, int $offset = 0)
+    public function findAll(?int $limit = null, int $offset = 0)
     {
         $data = parent::findAll($limit, $offset);
 
         return $this->addRelations($data);
     }
 
-    //--------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
     /**
      * Returns the first row of the result set. Will take any previous
@@ -206,8 +206,6 @@ trait ModelTrait
      * Intercepts data from a finder and injects related items
      *
      * @param array $rows Array of rows from the finder
-     *
-     * @return array
      */
     protected function addRelations($rows): ?array
     {
