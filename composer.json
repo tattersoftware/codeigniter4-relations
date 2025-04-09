@@ -23,12 +23,18 @@
     "homepage": "https://github.com/tattersoftware/codeigniter4-relations",
     "require": {
         "php": "^7.4 || ^8.0",
-        "tatter/schemas": "^2.0"
+        "tatter/schemas": "dev-develop"
     },
     "require-dev": {
         "codeigniter4/framework": "^4.5",
         "tatter/tools": "^2.0"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jozefrebjak/codeigniter4-schemas"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
